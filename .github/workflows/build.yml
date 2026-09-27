@@ -26,13 +26,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # Installs cmdline-tools, sets ANDROID_HOME/ANDROID_SDK_ROOT, accepts licenses, and installs
+      # the listed packages. The default package list includes the removed legacy "tools" package,
+      # so the list is given explicitly.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Accept licenses and install SDK components
-        run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
 
       - name: Set up Gradle (cache + wrapper validation)
         uses: gradle/actions/setup-gradle@v4
