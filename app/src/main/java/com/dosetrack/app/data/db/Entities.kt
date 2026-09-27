@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.dosetrack.app.data.model.DosageUnit
 import com.dosetrack.app.data.model.DoseStatus
+import com.dosetrack.app.data.model.DurationType
 import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationStatus
@@ -30,7 +31,10 @@ data class MedicationEntity(
     val notes: String? = null,
     /** LocalDate.toEpochDay() */
     val startDate: Long,
-    /** LocalDate.toEpochDay(); null = ongoing. */
+    val durationType: DurationType = DurationType.ONGOING,
+    /** Course length in days when [durationType] is DAYS. */
+    val durationDays: Int? = null,
+    /** Last day (inclusive) as LocalDate.toEpochDay(); null = ongoing. Computed for DAYS. */
     val endDate: Long? = null,
     val status: MedicationStatus = MedicationStatus.ACTIVE,
     /** Doses are only generated at or after this instant (set on create, schedule edit, resume). */

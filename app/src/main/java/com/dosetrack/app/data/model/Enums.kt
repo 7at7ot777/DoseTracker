@@ -17,6 +17,12 @@ enum class Frequency(val timesPerDay: Int?, val defaultTimes: List<Int>) {
     CUSTOM(null, listOf(9 * 60)),
 }
 
+/**
+ * How the treatment length was entered. The resolved last day is always stored in
+ * MedicationEntity.endDate so dose generation only needs that one field.
+ */
+enum class DurationType { ONGOING, DAYS, END_DATE }
+
 enum class FoodInstruction { ANY_TIME, BEFORE_FOOD, WITH_FOOD, AFTER_FOOD, CUSTOM }
 
 /** ARCHIVED is the soft-delete state: hidden from lists, history kept. */
