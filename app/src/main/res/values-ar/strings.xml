@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">DoseTrack</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">اليوم</string>
+    <string name="nav_medications">الأدوية</string>
+    <string name="nav_history">السجل</string>
+    <string name="nav_settings">الإعدادات</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; the UI itself is themed by Compose (ui/theme/Theme.kt).
+         AppCompat parent is required by AppCompatActivity (per-app language, night mode). -->
+    <style name="Theme.DoseTrack" parent="Theme.AppCompat.DayNight.NoActionBar" />
+</resources>
