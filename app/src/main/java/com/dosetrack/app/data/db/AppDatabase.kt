@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [MedicationEntity::class, ScheduleEntity::class, DoseEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -18,8 +18,8 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "dosetrack.db")
-                // v1 was a pre-release build with no user-facing data entry; later versions need real migrations.
-                .fallbackToDestructiveMigrationFrom(1)
+                // v1-v2 were pre-release builds with no user-facing data entry; later versions need real migrations.
+                .fallbackToDestructiveMigrationFrom(1, 2)
                 .build()
     }
 }

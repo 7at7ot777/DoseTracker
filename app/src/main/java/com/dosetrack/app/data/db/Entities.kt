@@ -60,6 +60,8 @@ data class ScheduleEntity(
     val medicationId: Long,
     /** Minutes after local midnight, 0..1439. */
     val timeOfDay: Int,
+    /** Optional note for this time only, e.g. "Take with lunch"; shown in its reminder. */
+    val note: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
 )
@@ -90,6 +92,8 @@ data class DoseEntity(
     val status: DoseStatus = DoseStatus.PENDING,
     /** Epoch millis a snoozed reminder should fire again. */
     val snoozedUntil: Long? = null,
+    /** Per-time schedule note copied at generation, so the reminder and history show the note that applied. */
+    val reminderNote: String? = null,
     val notes: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
