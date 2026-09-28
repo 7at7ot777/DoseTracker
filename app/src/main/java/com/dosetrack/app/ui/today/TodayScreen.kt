@@ -63,12 +63,16 @@ import com.dosetrack.app.ui.components.ReminderHealthBanners
 import com.dosetrack.app.ui.components.SnoozeDialog
 import com.dosetrack.app.ui.currentLocale
 import com.dosetrack.app.ui.is24HourClock
+import com.dosetrack.app.ui.profiles.ProfileAvatar
+import com.dosetrack.app.ui.profiles.ProfileSwitcher
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodayScreen(
     onAddMedication: () -> Unit,
     onOpenMedication: (Long) -> Unit,
+    onManageProfiles: () -> Unit,
+    onAddProfile: () -> Unit,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -103,11 +107,22 @@ fun TodayScreen(
                     Column {
                         Text(stringResource(R.string.title_today))
                         Text(
-                            text = Formats.dayHeader(state.date, locale),
+                            text = stringResource(
+                                R.string.header_date_for,
+                                Formats.dayHeader(state.date, locale),
+                                shownFor(state),
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                },
+                actions = {
+                    ProfileSwitcher(
+                        offerEveryone = true,
+                        onManageProfiles = onManageProfiles,
+                        onAddProfile = onAddProfile,
+                    )
                 },
             )
         },
@@ -116,7 +131,11 @@ fun TodayScreen(
             state.loading -> Unit
             !state.hasMedications && state.doses.isEmpty() -> EmptyState(
                 icon = Icons.Filled.Medication,
-                title = stringResource(R.string.medications_empty_title),
+                title = if (state.selection?.everyone == false) {
+                    stringResource(R.string.medications_empty_for, state.selection!!.profile.name)
+                } else {
+                    stringResource(R.string.medications_empty_title)
+                },
                 message = stringResource(R.string.medications_empty_message),
                 actionLabel = stringResource(R.string.action_add_medication),
                 onAction = onAddMedication,
@@ -218,6 +237,7 @@ private fun TodayList(
             items(doses, key = { it.dose.id }) { item ->
                 DoseCard(
                     item = item,
+                    showProfile = state.selection?.everyone == true,
                     onTake = { onTake(item) },
                     onSkip = { onSkip(item) },
                     onSnooze = { onSnooze(item) },
@@ -226,6 +246,17 @@ private fun TodayList(
                 )
             }
         }
+    }
+}
+
+/** Who Today is showing: a profile name, or "Everyone". */
+@Composable
+private fun shownFor(state: TodayUiState): String {
+    val selection = state.selection
+    return when {
+        selection == null -> ""
+        selection.everyone -> stringResource(R.string.profile_everyone)
+        else -> selection.profile.name
     }
 }
 
@@ -262,6 +293,7 @@ private fun ProgressCard(state: TodayUiState) {
 @Composable
 private fun DoseCard(
     item: TodayDose,
+    showProfile: Boolean,
     onTake: () -> Unit,
     onSkip: () -> Unit,
     onSnooze: () -> Unit,
@@ -286,6 +318,22 @@ private fun DoseCard(
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    // "Everyone" view: whose dose this is comes first.
+                    val profile = item.profile
+                    if (showProfile && profile != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        ) {
+                            ProfileAvatar(profile, size = 24.dp)
+                            Text(
+                                text = profile.name,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                    }
                     Text(
                         text = item.medication.name,
                         style = MaterialTheme.typography.titleLarge,

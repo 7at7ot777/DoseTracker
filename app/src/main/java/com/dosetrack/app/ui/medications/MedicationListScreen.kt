@@ -39,19 +39,43 @@ import com.dosetrack.app.ui.components.EmptyState
 import com.dosetrack.app.ui.components.StatusBadge
 import com.dosetrack.app.ui.currentLocale
 import com.dosetrack.app.ui.is24HourClock
+import com.dosetrack.app.ui.profiles.ProfileSwitcher
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationListScreen(
     onAddMedication: () -> Unit,
     onOpenMedication: (Long) -> Unit,
+    onManageProfiles: () -> Unit,
+    onAddProfile: () -> Unit,
     viewModel: MedicationListViewModel = viewModel(factory = MedicationListViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val profileName = state.profile?.name.orEmpty()
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_medications)) }) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(stringResource(R.string.nav_medications))
+                        Text(
+                            text = profileName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+                actions = {
+                    ProfileSwitcher(
+                        offerEveryone = false,
+                        onManageProfiles = onManageProfiles,
+                        onAddProfile = onAddProfile,
+                    )
+                },
+            )
+        },
         floatingActionButton = {
             if (state.items.isNotEmpty()) {
                 ExtendedFloatingActionButton(
@@ -66,7 +90,7 @@ fun MedicationListScreen(
             state.loading -> Unit
             state.items.isEmpty() -> EmptyState(
                 icon = Icons.Filled.Medication,
-                title = stringResource(R.string.medications_empty_title),
+                title = stringResource(R.string.medications_empty_for, profileName),
                 message = stringResource(R.string.medications_empty_message),
                 actionLabel = stringResource(R.string.action_add_medication),
                 onAction = onAddMedication,

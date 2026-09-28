@@ -3,6 +3,38 @@
 
     <!-- Profiles -->
     <string name="profile_default_name">أنا</string>
+    <string name="profiles_title">الملفات الشخصية</string>
+    <string name="profiles_manage">إدارة الملفات الشخصية</string>
+    <string name="profiles_info">%1$d من %2$d ملفات. لكل شخص أدويته وتذكيراته وسجله الخاص.</string>
+    <string name="profile_add">إضافة ملف شخصي</string>
+    <string name="profile_edit_title">تعديل الملف الشخصي</string>
+    <string name="profile_everyone">الجميع</string>
+    <string name="profile_everyone_summary">جرعات اليوم لكل الملفات الشخصية</string>
+    <string name="profile_switch_description">الملف الشخصي: %1$s. تبديل الملف</string>
+    <string name="profile_selected">محدد</string>
+    <string name="profile_active">المعروض الآن</string>
+    <string name="profile_created">أُنشئ في %1$s</string>
+    <string name="profile_limit_reached">يمكنك إنشاء %1$d ملفات شخصية كحد أقصى. احذف ملفًا لإضافة آخر.</string>
+    <string name="profile_name">الاسم</string>
+    <string name="profile_name_required">أدخل اسمًا</string>
+    <string name="profile_name_too_long">استخدم %1$d حرفًا كحد أقصى</string>
+    <string name="profile_color">اللون</string>
+    <string name="profile_color_auto">لون تلقائي</string>
+    <string name="profile_color_option">اللون %1$d</string>
+    <string name="profile_choose_photo">اختيار صورة</string>
+    <string name="profile_remove_photo">إزالة الصورة</string>
+    <string name="profile_photo_failed">تم حفظ الملف الشخصي، لكن تعذّر استخدام الصورة. جرّب صورة أخرى.</string>
+    <string name="profile_not_found">تعذّر العثور على هذا الملف الشخصي.</string>
+    <string name="profile_delete_title">حذف %1$s؟</string>
+    <string name="profile_delete_message">سيتم حذف %1$s وكل سجل الجرعات لهذا الملف نهائيًا وستتوقف تذكيراته. لن تتأثر الملفات الأخرى. صدّر نسخة احتياطية أولًا إن كنت قد تحتاج هذه البيانات.</string>
+    <string name="profile_delete_description">حذف %1$s</string>
+    <string name="profile_deleted">تم حذف الملف الشخصي</string>
+    <string name="profile_delete_last">لا يمكن حذف الملف الشخصي الوحيد</string>
+    <string name="settings_profiles_summary">حتى %1$d أشخاص، لكل منهم أدويته وتذكيراته</string>
+    <string name="header_date_for">%1$s · %2$s</string>
+    <string name="medications_empty_for">لا توجد أدوية لـ %1$s بعد</string>
+    <string name="medication_for">لـ %1$s</string>
+    <string name="medication_for_label">لمن</string>
 
     <!-- Navigation -->
     <string name="nav_today">اليوم</string>

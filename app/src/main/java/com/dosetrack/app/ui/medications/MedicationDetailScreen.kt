@@ -45,6 +45,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dosetrack.app.R
 import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.data.db.ProfileEntity
+import com.dosetrack.app.ui.profiles.ProfileAvatar
 import com.dosetrack.app.domain.AdherenceStats
 import com.dosetrack.app.domain.DoseDisplayState
 import com.dosetrack.app.ui.components.DoseStatusBadge
@@ -106,6 +108,7 @@ fun MedicationDetailScreen(
             else -> DetailContent(
                 data = data,
                 stats = state.stats,
+                profile = state.profile,
                 recentDoses = state.recentDoses,
                 onPause = viewModel::pause,
                 onResume = viewModel::resume,
@@ -134,6 +137,7 @@ fun MedicationDetailScreen(
 private fun DetailContent(
     data: MedicationWithSchedules,
     stats: AdherenceStats,
+    profile: ProfileEntity?,
     recentDoses: List<Pair<DoseEntity, DoseDisplayState>>,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -154,6 +158,16 @@ private fun DetailContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        if (profile != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ProfileAvatar(profile, size = 32.dp)
+                Text(
+                    text = stringResource(R.string.medication_for, profile.name),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 12.dp),
+                )
+            }
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = Labels.doseLine(res, medication),

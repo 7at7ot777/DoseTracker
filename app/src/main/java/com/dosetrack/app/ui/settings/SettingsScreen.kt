@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Snooze
@@ -62,6 +63,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dosetrack.app.BuildConfig
 import com.dosetrack.app.R
 import com.dosetrack.app.data.ThemeMode
+import com.dosetrack.app.domain.ProfileRules
 import com.dosetrack.app.ui.appResources
 import com.dosetrack.app.ui.components.ConfirmDialog
 import com.dosetrack.app.ui.components.SnoozeDialog
@@ -72,7 +74,10 @@ private enum class SettingsDialog { SNOOZE, THEME, LANGUAGE, CLEAR, ABOUT, PRIVA
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)) {
+fun SettingsScreen(
+    onOpenProfiles: () -> Unit,
+    viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
+) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val pendingImport by viewModel.pendingImport.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -114,6 +119,15 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel(factory = SettingsVi
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp),
         ) {
+            SectionHeader(stringResource(R.string.profiles_title))
+            ClickRow(
+                icon = Icons.Filled.ManageAccounts,
+                title = stringResource(R.string.profiles_manage),
+                subtitle = stringResource(R.string.settings_profiles_summary, ProfileRules.MAX_PROFILES),
+                onClick = onOpenProfiles,
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.settings_section_notifications))
             SwitchRow(
                 icon = Icons.Filled.Notifications,

@@ -13,6 +13,7 @@ import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.ProfileRepository
 import com.dosetrack.app.data.ScheduleInput
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.data.db.ProfileEntity
 import com.dosetrack.app.data.db.effectiveReminderStyle
 import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.data.model.DosageUnit
@@ -54,6 +55,9 @@ data class MedicationFormState(
     val customInstructions: String = "",
     val notes: String = "",
     val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION,
+    /** Owner; chosen for a new medication (defaults to the profile shown), fixed when editing. */
+    val profileId: Long? = null,
+    val profiles: List<ProfileEntity> = emptyList(),
     val showErrors: Boolean = false,
     val saving: Boolean = false,
     val saved: Boolean = false,
@@ -92,14 +96,24 @@ class MedicationEditViewModel(
     val state: StateFlow<MedicationFormState> = _state.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            profileRepository.observeAll().collect { profiles -> _state.update { it.copy(profiles = profiles) } }
+        }
         if (editId != null) {
             viewModelScope.launch {
                 val existing = repository.get(editId)
-                _state.value = if (existing == null) {
-                    _state.value.copy(loading = false, notFound = true)
-                } else {
-                    formFrom(existing)
+                _state.update { current ->
+                    if (existing == null) {
+                        current.copy(loading = false, notFound = true)
+                    } else {
+                        formFrom(existing).copy(profiles = current.profiles)
+                    }
                 }
+            }
+        } else {
+            viewModelScope.launch {
+                val active = profileRepository.activeProfileNow().id
+                _state.update { if (it.profileId == null) it.copy(profileId = active) else it }
             }
         }
     }
@@ -147,8 +161,8 @@ class MedicationEditViewModel(
         }
         _state.update { it.copy(saving = true) }
         viewModelScope.launch {
-            // A new medication belongs to the profile shown when it is saved; edits keep theirs.
-            repository.save(form.toInput(profileRepository.activeProfileNow().id))
+            // Edits keep their owner (enforced in the repository); new ones use the chosen profile.
+            repository.save(form.toInput(form.profileId ?: profileRepository.activeProfileNow().id))
             _state.update { it.copy(saving = false, saved = true) }
         }
     }
@@ -194,6 +208,7 @@ class MedicationEditViewModel(
             customInstructions = m.customInstructions.orEmpty(),
             notes = m.notes.orEmpty(),
             reminderStyle = m.effectiveReminderStyle,
+            profileId = m.profileId,
         )
     }
 

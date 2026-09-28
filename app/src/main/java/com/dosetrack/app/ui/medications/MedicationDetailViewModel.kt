@@ -9,6 +9,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.ProfileRepository
+import com.dosetrack.app.data.db.ProfileEntity
 import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.MedicationWithSchedules
 import com.dosetrack.app.domain.AdherenceStats
@@ -28,11 +30,13 @@ data class MedicationDetailUiState(
     val stats: AdherenceStats = AdherenceStats.EMPTY,
     /** Most recent past doses with their display state, newest first. */
     val recentDoses: List<Pair<DoseEntity, DoseDisplayState>> = emptyList(),
+    val profile: ProfileEntity? = null,
 )
 
 class MedicationDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: MedicationRepository,
+    profileRepository: ProfileRepository,
 ) : ViewModel() {
     private val medicationId: Long = checkNotNull(savedStateHandle.get<Long>(ARG_ID))
     private val openedAt = System.currentTimeMillis()
@@ -41,10 +45,12 @@ class MedicationDetailViewModel(
         repository.observe(medicationId),
         repository.observeStatusCounts(medicationId),
         repository.observeRecentDoses(medicationId, before = openedAt, limit = RECENT_LIMIT),
-    ) { data, counts, recent ->
+        profileRepository.observeAll(),
+    ) { data, counts, recent, profiles ->
         MedicationDetailUiState(
             loading = false,
             data = data,
+            profile = profiles.firstOrNull { it.id == data?.medication?.profileId },
             stats = AdherenceStats.from(counts.associate { it.status to it.count }),
             recentDoses = recent.map {
                 it to displayStateOf(it.status, it.scheduledAt, openedAt, it.snoozedUntil)
@@ -79,6 +85,7 @@ class MedicationDetailViewModel(
                 MedicationDetailViewModel(
                     createSavedStateHandle(),
                     this[APPLICATION_KEY]!!.appContainer.medicationRepository,
+                    this[APPLICATION_KEY]!!.appContainer.profileRepository,
                 )
             }
         }

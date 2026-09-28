@@ -56,13 +56,18 @@ import com.dosetrack.app.ui.components.StatusBadge
 import com.dosetrack.app.ui.components.TimePickerDialog
 import com.dosetrack.app.ui.currentLocale
 import com.dosetrack.app.ui.is24HourClock
+import com.dosetrack.app.ui.profiles.ProfileSwitcher
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel = viewModel(factory = HistoryViewModel.Factory)) {
+fun HistoryScreen(
+    onManageProfiles: () -> Unit,
+    onAddProfile: () -> Unit,
+    viewModel: HistoryViewModel = viewModel(factory = HistoryViewModel.Factory),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDatePicker by remember { mutableStateOf(false) }
     var correcting by remember { mutableStateOf<HistoryRow?>(null) }
@@ -70,7 +75,27 @@ fun HistoryScreen(viewModel: HistoryViewModel = viewModel(factory = HistoryViewM
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.history_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(stringResource(R.string.history_title))
+                        Text(
+                            text = state.profile?.name.orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+                actions = {
+                    ProfileSwitcher(
+                        offerEveryone = false,
+                        onManageProfiles = onManageProfiles,
+                        onAddProfile = onAddProfile,
+                    )
+                },
+            )
+        },
     ) { padding ->
         if (!state.loading) {
             LazyColumn(

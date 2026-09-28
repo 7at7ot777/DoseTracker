@@ -3,6 +3,38 @@
 
     <!-- Profiles -->
     <string name="profile_default_name">Me</string>
+    <string name="profiles_title">Profiles</string>
+    <string name="profiles_manage">Manage profiles</string>
+    <string name="profiles_info">%1$d of %2$d profiles. Each person has their own medications, reminders and history.</string>
+    <string name="profile_add">Add profile</string>
+    <string name="profile_edit_title">Edit profile</string>
+    <string name="profile_everyone">Everyone</string>
+    <string name="profile_everyone_summary">Today\'s doses for all profiles</string>
+    <string name="profile_switch_description">Profile: %1$s. Switch profile</string>
+    <string name="profile_selected">Selected</string>
+    <string name="profile_active">Shown now</string>
+    <string name="profile_created">Created %1$s</string>
+    <string name="profile_limit_reached">You can have up to %1$d profiles. Delete a profile to add another.</string>
+    <string name="profile_name">Name</string>
+    <string name="profile_name_required">Enter a name</string>
+    <string name="profile_name_too_long">Use at most %1$d characters</string>
+    <string name="profile_color">Colour</string>
+    <string name="profile_color_auto">Automatic colour</string>
+    <string name="profile_color_option">Colour %1$d</string>
+    <string name="profile_choose_photo">Choose photo</string>
+    <string name="profile_remove_photo">Remove photo</string>
+    <string name="profile_photo_failed">The profile was saved, but the photo couldn\'t be used. Try another image.</string>
+    <string name="profile_not_found">This profile could not be found.</string>
+    <string name="profile_delete_title">Delete %1$s?</string>
+    <string name="profile_delete_message">%1$s and all dose history for this profile will be permanently deleted, and its reminders will stop. Other profiles are not affected. Export a backup first if you might need this data.</string>
+    <string name="profile_delete_description">Delete %1$s</string>
+    <string name="profile_deleted">Profile deleted</string>
+    <string name="profile_delete_last">The only profile can\'t be deleted</string>
+    <string name="settings_profiles_summary">Up to %1$d people, each with their own medications and reminders</string>
+    <string name="header_date_for">%1$s · %2$s</string>
+    <string name="medications_empty_for">No medications for %1$s yet</string>
+    <string name="medication_for">For %1$s</string>
+    <string name="medication_for_label">For</string>
 
     <!-- Navigation -->
     <string name="nav_today">Today</string>

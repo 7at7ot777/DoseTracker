@@ -73,6 +73,7 @@ import com.dosetrack.app.ui.components.DropdownField
 import com.dosetrack.app.ui.components.TimePickerDialog
 import com.dosetrack.app.ui.currentLocale
 import com.dosetrack.app.ui.is24HourClock
+import com.dosetrack.app.ui.profiles.ProfileAvatar
 
 private enum class DateTarget { START, END }
 
@@ -140,6 +141,30 @@ private fun EditForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // --- Whose medication ---
+        val owner = state.profiles.firstOrNull { it.id == state.profileId }
+        if (owner != null) {
+            if (state.isEdit || state.profiles.size == 1) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProfileAvatar(owner, size = 32.dp)
+                    Text(
+                        text = stringResource(R.string.medication_for, owner.name),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 12.dp),
+                    )
+                }
+            } else {
+                DropdownField(
+                    label = stringResource(R.string.medication_for_label),
+                    options = state.profiles,
+                    selected = owner,
+                    optionLabel = { it.name },
+                    onSelected = { profile -> viewModel.edit { copy(profileId = profile.id) } },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
         // --- Medication ---
         SectionTitle(stringResource(R.string.section_medication))
         OutlinedTextField(

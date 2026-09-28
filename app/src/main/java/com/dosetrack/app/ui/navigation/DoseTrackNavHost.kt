@@ -33,6 +33,9 @@ import com.dosetrack.app.ui.medications.MedicationEditScreen
 import com.dosetrack.app.ui.medications.MedicationEditViewModel
 import com.dosetrack.app.ui.medications.MedicationListScreen
 import com.dosetrack.app.ui.onboarding.OnboardingScreen
+import com.dosetrack.app.ui.profiles.ProfileEditScreen
+import com.dosetrack.app.ui.profiles.ProfileEditViewModel
+import com.dosetrack.app.ui.profiles.ProfilesScreen
 import com.dosetrack.app.ui.settings.SettingsScreen
 import com.dosetrack.app.ui.today.TodayScreen
 
@@ -46,8 +49,12 @@ object Routes {
     const val MEDICATION_DETAIL = "medication/{${MedicationDetailViewModel.ARG_ID}}"
     const val MEDICATION_EDIT = "medication_edit?${MedicationEditViewModel.ARG_ID}={${MedicationEditViewModel.ARG_ID}}"
 
+    const val PROFILES = "profiles"
+    const val PROFILE_EDIT = "profile_edit?${ProfileEditViewModel.ARG_ID}={${ProfileEditViewModel.ARG_ID}}"
+
     fun medicationDetail(id: Long) = "medication/$id"
     fun medicationEdit(id: Long? = null) = "medication_edit?${MedicationEditViewModel.ARG_ID}=${id ?: -1L}"
+    fun profileEdit(id: Long? = null) = "profile_edit?${ProfileEditViewModel.ARG_ID}=${id ?: -1L}"
 }
 
 private enum class TopLevelDestination(
@@ -110,20 +117,51 @@ fun DoseTrackNavHost(startDestination: String) {
                     },
                 )
             }
+            val openProfiles = { navController.navigate(Routes.PROFILES) }
+            val addProfile = { navController.navigate(Routes.profileEdit()) }
+
             composable(Routes.TODAY) {
                 TodayScreen(
                     onAddMedication = { navController.navigate(Routes.medicationEdit()) },
                     onOpenMedication = { id -> navController.navigate(Routes.medicationDetail(id)) },
+                    onManageProfiles = openProfiles,
+                    onAddProfile = addProfile,
                 )
             }
             composable(Routes.MEDICATIONS) {
                 MedicationListScreen(
                     onAddMedication = { navController.navigate(Routes.medicationEdit()) },
                     onOpenMedication = { id -> navController.navigate(Routes.medicationDetail(id)) },
+                    onManageProfiles = openProfiles,
+                    onAddProfile = addProfile,
                 )
             }
-            composable(Routes.HISTORY) { HistoryScreen() }
-            composable(Routes.SETTINGS) { SettingsScreen() }
+            composable(Routes.HISTORY) {
+                HistoryScreen(onManageProfiles = openProfiles, onAddProfile = addProfile)
+            }
+            composable(Routes.SETTINGS) { SettingsScreen(onOpenProfiles = openProfiles) }
+
+            composable(Routes.PROFILES) {
+                ProfilesScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddProfile = addProfile,
+                    onEditProfile = { id -> navController.navigate(Routes.profileEdit(id)) },
+                )
+            }
+            composable(
+                route = Routes.PROFILE_EDIT,
+                arguments = listOf(
+                    navArgument(ProfileEditViewModel.ARG_ID) {
+                        type = NavType.LongType
+                        defaultValue = -1L
+                    },
+                ),
+            ) {
+                ProfileEditScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() },
+                )
+            }
 
             composable(
                 route = Routes.MEDICATION_DETAIL,
