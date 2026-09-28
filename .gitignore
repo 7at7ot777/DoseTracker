@@ -9,6 +9,12 @@ build/
 # Local config (SDK path etc.)
 local.properties
 
+# Signing keys and their secrets must never be committed
+*.p12
+*.jks
+*.keystore
+RELEASE_*.txt
+
 # IDE
 .idea/
 *.iml

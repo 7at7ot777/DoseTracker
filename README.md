@@ -50,6 +50,19 @@ No Android Studio, SDK, Gradle or Java is needed locally. `.github/workflows/bui
 
 Trigger: push / pull request to `main`, or **Actions → Android Build → Run workflow**.
 
+## Signed release build
+
+`.github/workflows/release.yml` builds a **release APK signed with your own key** when you push a tag matching `versionName` (e.g. `v1.0.0`) and publishes it as a GitHub Release (`DoseTrack-1.0.0.apk`). "Run workflow" builds and signs without publishing.
+
+One-time setup:
+1. Create the key (OpenSSL only, no Java): `bash scripts/create-release-keystore.sh` → files in `~/DoseTrack-signing` (outside the repo; **back this folder up** — without it you can never ship an update to installed copies).
+2. GitHub repo → Settings → Secrets and variables → Actions → New repository secret, for each file's contents:
+   `RELEASE_KEYSTORE_BASE64`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`.
+
+New version: bump `versionCode` / `versionName` in `app/build.gradle.kts`, commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+The release key differs from the debug key: to switch an installed debug copy to the release build, **Export data**, uninstall, install the release APK, **Import data**.
+
 ## Toolchain
 
 Gradle 8.11.1 (wrapper) · AGP 8.7.3 · Kotlin 2.1.0 · JDK 17 · compileSdk/targetSdk 35 · minSdk 26 · Jetpack Compose + Material 3 · Room · DataStore · WorkManager · kotlinx.serialization. Versions live in `gradle/libs.versions.toml`.
