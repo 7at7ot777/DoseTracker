@@ -14,8 +14,8 @@ android {
         applicationId = "com.dosetrack.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +42,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // Lint runs in CI as a report only; it never fails the build.
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 }
 

@@ -32,25 +32,24 @@ class NotificationHelper(private val context: Context) {
 
     /**
      * Channel sound/vibration can't be changed after creation, so each combination gets its own
-     * channel id and the others are deleted.
+     * channel id and the others are deleted. Re-creating an existing channel only updates its
+     * name/description, which keeps them in the current app language.
      */
     fun ensureChannel(settings: AppSettings): String {
         val id = channelId(settings.soundEnabled, settings.vibrationEnabled)
-        if (manager.getNotificationChannel(id) == null) {
-            val res = localizedContext().resources
-            val channel = NotificationChannel(
-                id,
-                res.getString(R.string.channel_reminders_name),
-                NotificationManager.IMPORTANCE_HIGH,
-            ).apply {
-                description = res.getString(R.string.channel_reminders_description)
-                enableVibration(settings.vibrationEnabled)
-                if (settings.vibrationEnabled) vibrationPattern = longArrayOf(0, 400, 200, 400)
-                if (!settings.soundEnabled) setSound(null, null)
-                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-            }
-            manager.createNotificationChannel(channel)
+        val res = localizedContext().resources
+        val channel = NotificationChannel(
+            id,
+            res.getString(R.string.channel_reminders_name),
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = res.getString(R.string.channel_reminders_description)
+            enableVibration(settings.vibrationEnabled)
+            if (settings.vibrationEnabled) vibrationPattern = longArrayOf(0, 400, 200, 400)
+            if (!settings.soundEnabled) setSound(null, null)
+            lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         }
+        manager.createNotificationChannel(channel)
         manager.notificationChannels
             .filter { it.id.startsWith(CHANNEL_PREFIX) && it.id != id }
             .forEach { manager.deleteNotificationChannel(it.id) }
@@ -131,29 +130,28 @@ class NotificationHelper(private val context: Context) {
      * silent). Separate from the "reminders_*" channels, so their cleanup never removes it.
      */
     fun ensureAlarmChannel(): String {
-        if (manager.getNotificationChannel(ALARM_CHANNEL_ID) == null) {
-            val res = localizedContext().resources
-            val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val channel = NotificationChannel(
-                ALARM_CHANNEL_ID,
-                res.getString(R.string.channel_alarms_name),
-                NotificationManager.IMPORTANCE_HIGH,
-            ).apply {
-                description = res.getString(R.string.channel_alarms_description)
-                setSound(
-                    sound,
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build(),
-                )
-                enableVibration(true)
-                vibrationPattern = longArrayOf(0, 800, 400, 800)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            }
-            manager.createNotificationChannel(channel)
+        val res = localizedContext().resources
+        val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val channel = NotificationChannel(
+            ALARM_CHANNEL_ID,
+            res.getString(R.string.channel_alarms_name),
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = res.getString(R.string.channel_alarms_description)
+            setSound(
+                sound,
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build(),
+            )
+            enableVibration(true)
+            vibrationPattern = longArrayOf(0, 800, 400, 800)
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
+        // Creates it, or only refreshes name/description if it already exists.
+        manager.createNotificationChannel(channel)
         return ALARM_CHANNEL_ID
     }
 

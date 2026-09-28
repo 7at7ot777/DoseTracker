@@ -11,6 +11,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.dosetrack.app.data.AppSettings
 import com.dosetrack.app.ui.navigation.DoseTrackNavHost
 import com.dosetrack.app.ui.navigation.Routes
@@ -21,7 +23,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val settingsRepository = appContainer.settingsRepository
+        val container = appContainer
+        val settingsRepository = container.settingsRepository
+        // The activity is recreated on a language change: refresh channel names in that language.
+        lifecycleScope.launch {
+            container.notificationHelper.ensureChannel(settingsRepository.current())
+            container.notificationHelper.ensureAlarmChannel()
+        }
         setContent {
             DoseTrackTheme {
                 // Start destination depends on whether onboarding was completed; decided once.

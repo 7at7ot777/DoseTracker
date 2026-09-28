@@ -8,9 +8,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 
 data class MedicationListItem(val data: MedicationWithSchedules, val nextDoseAt: Long?)
@@ -20,12 +24,21 @@ data class MedicationListUiState(
     val items: List<MedicationListItem> = emptyList(),
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MedicationListViewModel(repository: MedicationRepository) : ViewModel() {
+    /** "Next dose" must move on as doses pass, so the lower bound follows the clock. */
+    private val nextDoses = flow {
+        while (true) {
+            emit(System.currentTimeMillis())
+            delay(TICK_MILLIS)
+        }
+    }.flatMapLatest { now -> repository.observeNextDoses(now) }
+
     val state: StateFlow<MedicationListUiState> = combine(
         repository.observeVisible(),
-        repository.observeNextDoses(System.currentTimeMillis()),
-    ) { medications, nextDoses ->
-        val nextById = nextDoses.associate { it.medicationId to it.nextAt }
+        nextDoses,
+    ) { medications, next ->
+        val nextById = next.associate { it.medicationId to it.nextAt }
         MedicationListUiState(
             loading = false,
             items = medications.map { MedicationListItem(it, nextById[it.medication.id]) },
@@ -33,6 +46,8 @@ class MedicationListViewModel(repository: MedicationRepository) : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MedicationListUiState())
 
     companion object {
+        private const val TICK_MILLIS = 60_000L
+
         val Factory = viewModelFactory {
             initializer {
                 MedicationListViewModel(this[APPLICATION_KEY]!!.appContainer.medicationRepository)

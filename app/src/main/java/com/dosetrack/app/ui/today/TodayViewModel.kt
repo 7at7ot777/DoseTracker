@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -74,25 +75,29 @@ class TodayViewModel(
 ) : ViewModel() {
 
     /**
-     * Ticks every 30 s while the screen is visible: re-syncs doses (creates tomorrow's rows,
-     * records misses) and refreshes Upcoming/Due/Missed labels.
+     * Ticks every 30 s while the screen is visible to refresh Upcoming/Due/Missed labels
+     * (Missed is derived from the clock, so no database work is needed per tick).
      */
     private val clock: Flow<Long> = flow {
         while (true) {
-            doseSync.sync()
             emit(System.currentTimeMillis())
             delay(TICK_MILLIS)
         }
     }
 
-    /** (now, local date) shared so the clock (and its sync) runs once per tick. */
+    /** (now, local date) shared so the clock runs once per tick for all consumers. */
     private val ticks: SharedFlow<Pair<Long, LocalDate>> = clock
         .map { now -> now to Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).toLocalDate() }
         .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
 
+    /**
+     * Syncs when the screen starts and whenever the day rolls over (creates the new day's doses,
+     * records misses, re-arms alarms); alarms and the background worker cover the rest.
+     */
     private val dosesOfDay = ticks
         .map { it.second }
         .distinctUntilChanged()
+        .onEach { doseSync.sync() }
         .flatMapLatest { day -> doseRepository.observeDay(day).map { day to it } }
 
     val state: StateFlow<TodayUiState> = combine(

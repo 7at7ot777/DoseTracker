@@ -53,6 +53,19 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon
 
+      - name: Lint (report only)
+        continue-on-error: true
+        run: ./gradlew lintDebug --no-daemon
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Upload unit test reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -82,5 +95,5 @@ jobs:
           gh release create latest-debug DoseTrack-debug.apk \
             --prerelease \
             --target "$GITHUB_SHA" \
-            --title "Latest debug build" \
-            --notes "Debug APK built from commit $GITHUB_SHA (run #$GITHUB_RUN_NUMBER)."
+            --title "DoseTrack latest debug build" \
+            --notes "DoseTrack debug APK built from commit $GITHUB_SHA (run #$GITHUB_RUN_NUMBER). Install DoseTrack-debug.apk directly on your phone."
