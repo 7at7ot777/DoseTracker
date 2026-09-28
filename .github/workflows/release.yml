@@ -61,7 +61,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Decode keystore
         env:
@@ -90,7 +90,7 @@ jobs:
           cp "$APK" "DoseTrack-$VERSION.apk"
 
       - name: Upload signed APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: DoseTrack-${{ env.VERSION }}-release
           path: DoseTrack-${{ env.VERSION }}.apk

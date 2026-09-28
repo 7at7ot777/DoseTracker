@@ -44,6 +44,8 @@ import com.dosetrack.app.R
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.AppSettings
 import com.dosetrack.app.data.db.DoseWithMedication
+import com.dosetrack.app.data.db.ProfileEntity
+import com.dosetrack.app.ui.profiles.ProfileAvatar
 import com.dosetrack.app.data.model.DoseStatus
 import com.dosetrack.app.reminders.NotificationHelper
 import com.dosetrack.app.ui.Formats
@@ -90,11 +92,18 @@ private fun AlarmScreen(doseId: Long, onFinished: () -> Unit) {
     val container = LocalContext.current.appContainer
     val settings by container.settingsRepository.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     var item by remember { mutableStateOf<DoseWithMedication?>(null) }
+    var profile by remember { mutableStateOf<ProfileEntity?>(null) }
 
     LaunchedEffect(doseId) {
         val loaded = container.doseRepository.get(doseId)
         // Already handled elsewhere (e.g. "Taken" from the notification): nothing to show.
-        if (loaded == null || loaded.dose.status != DoseStatus.PENDING) onFinished() else item = loaded
+        if (loaded == null || loaded.dose.status != DoseStatus.PENDING) {
+            onFinished()
+        } else {
+            // The dose's owner, whichever profile the app happens to show.
+            profile = container.profileRepository.get(loaded.medication.profileId)
+            item = loaded
+        }
     }
 
     // Actions outlive this screen, so they run on the application scope.
@@ -107,6 +116,7 @@ private fun AlarmScreen(doseId: Long, onFinished: () -> Unit) {
     if (current != null) {
         AlarmContent(
             item = current,
+            profile = profile,
             snoozeMinutes = settings.snoozeMinutes,
             onTaken = { act { container.doseRepository.markTaken(doseId) } },
             onSnooze = {
@@ -121,6 +131,7 @@ private fun AlarmScreen(doseId: Long, onFinished: () -> Unit) {
 @Composable
 private fun AlarmContent(
     item: DoseWithMedication,
+    profile: ProfileEntity?,
     snoozeMinutes: Int,
     onTaken: () -> Unit,
     onSnooze: () -> Unit,
@@ -143,14 +154,24 @@ private fun AlarmContent(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(Modifier.weight(1f))
-            Icon(
-                imageVector = Icons.Filled.Medication,
-                contentDescription = null,
-                modifier = Modifier.size(96.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            if (profile != null) {
+                ProfileAvatar(profile, size = 96.dp)
+                Text(
+                    text = profile.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Medication,
+                    contentDescription = null,
+                    modifier = Modifier.size(96.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
             Text(
-                text = stringResource(R.string.notification_title, medication.name),
+                text = NotificationHelper.reminderTitle(res, profile, medication.name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,

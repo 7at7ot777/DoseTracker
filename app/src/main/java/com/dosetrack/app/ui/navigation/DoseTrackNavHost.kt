@@ -14,6 +14,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,6 +58,9 @@ object Routes {
     fun profileEdit(id: Long? = null) = "profile_edit?${ProfileEditViewModel.ARG_ID}=${id ?: -1L}"
 }
 
+/** Where a dose notification should lead: the owner's medication. */
+data class DeepLink(val profileId: Long, val medicationId: Long)
+
 private enum class TopLevelDestination(
     val route: String,
     @StringRes val label: Int,
@@ -69,8 +73,23 @@ private enum class TopLevelDestination(
 }
 
 @Composable
-fun DoseTrackNavHost(startDestination: String) {
+fun DoseTrackNavHost(
+    startDestination: String,
+    deepLink: DeepLink? = null,
+    onDeepLinkHandled: () -> Unit = {},
+) {
     val navController = rememberNavController()
+
+    // The profile was already selected by MainActivity; open the medication on top of Today.
+    LaunchedEffect(deepLink) {
+        if (deepLink != null) {
+            navController.navigate(Routes.medicationDetail(deepLink.medicationId)) {
+                popUpTo(Routes.TODAY)
+                launchSingleTop = true
+            }
+            onDeepLinkHandled()
+        }
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val showBottomBar = TopLevelDestination.entries.any { dest ->

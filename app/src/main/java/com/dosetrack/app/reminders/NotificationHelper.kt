@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
@@ -22,6 +23,8 @@ import com.dosetrack.app.MainActivity
 import com.dosetrack.app.R
 import com.dosetrack.app.data.AppSettings
 import com.dosetrack.app.data.db.DoseWithMedication
+import com.dosetrack.app.data.db.ProfileEntity
+import com.dosetrack.app.domain.ProfileRules
 import com.dosetrack.app.data.db.effectiveReminderStyle
 import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.ui.Labels
@@ -57,11 +60,14 @@ class NotificationHelper(private val context: Context) {
     }
 
     /**
-     * 💊 Time to take Cipralex
-     * 10 mg · 1 tablet
-     * Take after breakfast.        (omitted when no note applies)
+     * DoseTrack • Medication reminder
+     * 💊 Mom · Vitamin D
+     * 1 tablet
+     * Take after lunch.            (omitted when no note applies)
+     *
+     * [profile] is the dose's owner (not the profile shown in the app).
      */
-    fun showDoseReminder(item: DoseWithMedication, settings: AppSettings) {
+    fun showDoseReminder(item: DoseWithMedication, profile: ProfileEntity?, settings: AppSettings) {
         if (!canPost()) return
         val dose = item.dose
         val medication = item.medication
@@ -72,12 +78,14 @@ class NotificationHelper(private val context: Context) {
         val note = Labels.doseNote(res, dose.reminderNote, medication)
         val body = listOfNotNull(doseLine, note).joinToString("\n")
         val notificationId = notificationId(dose.id)
-        val openApp = openAppIntent(notificationId)
+        val openApp = openAppIntent(dose.id, medication.id, medication.profileId)
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(res.getString(R.string.notification_title, medication.name))
+            .setContentTitle(reminderTitle(res, profile, medication.name))
             .setContentText(doseLine)
+            .setSubText(res.getString(R.string.notification_subtext))
+            .setColor(profile?.colorArgb ?: ProfileRules.defaultColor(medication.profileId))
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setWhen(dose.scheduledAt)
@@ -177,13 +185,20 @@ class NotificationHelper(private val context: Context) {
         return NotificationManagerCompat.from(context).areNotificationsEnabled()
     }
 
-    private fun openAppIntent(requestCode: Int): PendingIntent {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        }
+    /**
+     * Opens the app on the dose's own profile and medication. The data URI and request code are
+     * per dose, so intents for different doses/profiles never replace each other.
+     */
+    private fun openAppIntent(doseId: Long, medicationId: Long, profileId: Long): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java)
+            .setAction(Intent.ACTION_VIEW)
+            .setData(Uri.parse("dosetrack://open/$doseId"))
+            .putExtra(EXTRA_PROFILE_ID, profileId)
+            .putExtra(EXTRA_MEDICATION_ID, medicationId)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         return PendingIntent.getActivity(
             context,
-            requestCode,
+            notificationId(doseId),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -229,6 +244,17 @@ class NotificationHelper(private val context: Context) {
 
     companion object {
         const val EXTRA_DOSE_ID = "dose_id"
+        const val EXTRA_PROFILE_ID = "profile_id"
+        const val EXTRA_MEDICATION_ID = "medication_id"
+
+        /** "💊 Mom · Vitamin D"; without a profile (should not happen) just the medication. */
+        fun reminderTitle(res: Resources, profile: ProfileEntity?, medicationName: String): String =
+            if (profile != null) {
+                res.getString(R.string.notification_title_profile, profile.name, medicationName)
+            } else {
+                res.getString(R.string.notification_title, medicationName)
+            }
+
         private const val CHANNEL_PREFIX = "reminders_"
         private const val ALARM_CHANNEL_ID = "dose_alarms_v1"
 

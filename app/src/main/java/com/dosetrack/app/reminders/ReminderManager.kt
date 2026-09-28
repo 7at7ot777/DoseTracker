@@ -52,7 +52,9 @@ class ReminderManager(
         val settings = settingsRepository.current()
         if (!settings.remindersEnabled) return
         if (item.dose.status != DoseStatus.PENDING || item.medication.status != MedicationStatus.ACTIVE) return
-        notifications.showDoseReminder(item, settings)
+        // The person is the dose's owner (via its medication), never the profile shown in the UI.
+        val profile = db.profileDao().getById(item.medication.profileId)
+        notifications.showDoseReminder(item, profile, settings)
     }
 
     /** Settings changed (reminders toggle, sound, vibration). */

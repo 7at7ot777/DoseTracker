@@ -6,6 +6,7 @@ Offline Android app for organising medications and remembering doses. English an
 
 ## Features
 
+- **Profiles (up to 5)** — one phone for yourself and your family. Each profile (name, optional photo and colour) has its own medications, schedules, reminders and history; two profiles can have a medication with the same name without affecting each other.
 - **Medications** — name, generic name, dose amount + unit, strength, type, instructions (before/with/after food or custom text), notes.
 - **Schedules** — once to four times daily or custom times; a separate note per dose time (e.g. 08:00 "after breakfast", 22:00 "before sleeping").
 - **Duration** — ongoing, number of days ("7-day course · Ends Oct 4"), or an end date. Reminders stop after the end date.
@@ -18,6 +19,15 @@ Offline Android app for organising medications and remembering doses. English an
 - **Onboarding** — short, skippable first-launch introduction with permission requests.
 
 All data is stored on the phone (Room database). No account, no server, no internet permission.
+
+## Profiles
+
+- Switch with the avatar at the top of **Today**, **Medications** and **History**. Today also has **Everyone**: every profile's doses for the day, each labelled with the person.
+- New medications go to the profile you pick in the form (default: the one shown). A medication never moves between profiles.
+- **Reminders work for every profile all the time.** The profile shown is only a display choice: reminders are scheduled from each dose record, so switching never cancels, pauses or changes anyone's reminders, and never stops an alarm that is ringing. (A unit test, `ReminderIndependenceTest`, keeps the reminder code from reading the selected profile.)
+- Every notification names the person: *"DoseTrack · Medication reminder — 💊 Mom · Vitamin D — 1 tablet — Take after lunch."* Alarm-mode reminders show the person's avatar and name on the full-screen alarm. Taken / Snooze act only on that dose; tapping the notification switches to that person and opens the medication.
+- The 5-profile limit is enforced when creating a profile and when importing a backup. Deleting a profile (Settings → Profiles) permanently deletes its medications and history and stops its reminders; the last profile can't be deleted.
+- Updating from a version without profiles moves all existing data into a profile named "Me" (rename it any time).
 
 ## Permissions
 
@@ -69,7 +79,7 @@ Gradle 8.11.1 (wrapper) · AGP 8.7.3 · Kotlin 2.1.0 · JDK 17 · compileSdk/tar
 
 ## Backup
 
-Settings → **Export data** saves a JSON file (`dosetrack-backup-YYYY-MM-DD.json`) with medications, schedules and full dose history. **Import data** replaces everything on the phone with a backup (after confirmation) and re-creates reminders.
+Settings → **Export data** saves a JSON file (`dosetrack-backup-YYYY-MM-DD.json`) with all profiles, medications, schedules and full dose history (profile photos are not included). **Import data** replaces everything on the phone with a backup (after confirmation) and re-creates reminders for every profile. Backups from before profiles existed import as a single profile "Me".
 
 ## Known limitations
 

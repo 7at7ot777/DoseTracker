@@ -308,6 +308,8 @@
     <string name="channel_reminders_name">Medication reminders</string>
     <string name="channel_reminders_description">Reminders at each scheduled dose time</string>
     <string name="notification_title">💊 Time to take %1$s</string>
+    <string name="notification_title_profile">💊 %1$s · %2$s</string>
+    <string name="notification_subtext">Medication reminder</string>
     <string name="notification_action_taken">Taken</string>
     <string name="notification_action_snooze">Snooze %1$d min</string>
     <string name="notification_action_open">Open App</string>
