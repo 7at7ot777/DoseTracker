@@ -4,6 +4,7 @@ import android.content.Context
 import com.dosetrack.app.data.DoseRepository
 import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.SettingsRepository
+import com.dosetrack.app.data.backup.BackupManager
 import com.dosetrack.app.data.db.AppDatabase
 import com.dosetrack.app.domain.DoseSync
 import com.dosetrack.app.reminders.AlarmScheduler
@@ -27,6 +28,7 @@ class AppContainer(context: Context) {
     val doseSync = DoseSync(database, reminderManager)
     val doseRepository = DoseRepository(database, reminderManager)
     val medicationRepository = MedicationRepository(database, doseSync, reminderManager)
+    val backupManager = BackupManager(database, reminderManager, notificationHelper, doseSync)
 }
 
 val Context.appContainer: AppContainer

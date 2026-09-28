@@ -237,6 +237,82 @@
     <string name="detail_record_title">سجلك</string>
     <string name="detail_recent_doses">الجرعات الأخيرة</string>
 
+    <!-- Settings -->
+    <string name="settings_section_notifications">الإشعارات</string>
+    <string name="settings_reminders">تذكيرات الجرعات</string>
+    <string name="settings_reminders_summary">نبّهني في موعد كل جرعة</string>
+    <string name="settings_default_snooze">مدة الغفوة الافتراضية</string>
+    <string name="settings_sound">الصوت</string>
+    <string name="settings_sound_vibration_summary">لتذكيرات الإشعار. وضع المنبه يرن دائمًا بنغمة المنبه.</string>
+    <string name="settings_vibration">الاهتزاز</string>
+    <string name="settings_system_notifications">إعدادات إشعارات النظام</string>
+    <string name="settings_system_notifications_summary">الصوت وشاشة القفل ووضع عدم الإزعاج</string>
+    <string name="settings_section_appearance">المظهر</string>
+    <string name="settings_theme">السمة</string>
+    <string name="theme_system">حسب النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="settings_section_data">البيانات</string>
+    <string name="settings_export">تصدير البيانات</string>
+    <string name="settings_export_summary">حفظ الأدوية وسجل الجرعات في ملف</string>
+    <string name="settings_import">استيراد البيانات</string>
+    <string name="settings_import_summary">الاستعادة من ملف نسخة احتياطية لتطبيق DoseTrack</string>
+    <string name="settings_clear">مسح كل البيانات</string>
+    <string name="settings_clear_summary">حذف كل الأدوية والسجل من هذا الهاتف</string>
+    <string name="settings_section_general">عام</string>
+    <string name="settings_language">اللغة</string>
+    <string name="language_system">حسب النظام</string>
+    <string name="settings_about">حول التطبيق</string>
+    <string name="settings_version">الإصدار %1$s</string>
+    <string name="settings_privacy">الخصوصية</string>
+    <string name="settings_privacy_summary">بياناتك تبقى على هذا الهاتف</string>
+    <string name="about_text">يساعدك DoseTrack على تنظيم أدويتك وتذكّر جرعاتك. هو أداة شخصية للتذكير والمتابعة فقط: لا يقدم نصائح طبية ولا يشخّص الحالات ولا يوصي بتغيير الجرعات. اتبع دائمًا تعليمات طبيبك أو الصيدلي.</string>
+    <string name="privacy_text">تُحفظ كل أدويتك وجداولها وسجل جرعاتك على هذا الهاتف فقط. لا يحتاج DoseTrack إلى حساب أو خادم أو اتصال بالإنترنت. لا تغادر بياناتك الهاتف إلا عندما تصدّر ملف نسخة احتياطية بنفسك.</string>
+    <string name="clear_confirm_title">مسح كل البيانات؟</string>
+    <string name="clear_confirm_message">سيتم حذف كل الأدوية والجداول وسجل الجرعات نهائيًا من هذا الهاتف وستتوقف كل التذكيرات. صدّر نسخة احتياطية أولًا إن كنت قد تحتاجها.</string>
+    <string name="action_clear">مسح</string>
+    <string name="import_confirm_title">استبدال كل البيانات؟</string>
+    <string name="import_confirm_message">تحتوي هذه النسخة على %1$s و%2$s. سيتم استبدال أدويتك وسجلك الحاليين.</string>
+    <string name="action_replace">استبدال</string>
+    <plurals name="medications_count">
+        <item quantity="zero">%1$d دواء</item>
+        <item quantity="one">دواء واحد</item>
+        <item quantity="two">دواءان</item>
+        <item quantity="few">%1$d أدوية</item>
+        <item quantity="many">%1$d دواءً</item>
+        <item quantity="other">%1$d دواء</item>
+    </plurals>
+    <plurals name="doses_count">
+        <item quantity="zero">%1$d سجل جرعة</item>
+        <item quantity="one">سجل جرعة واحد</item>
+        <item quantity="two">سجلا جرعات</item>
+        <item quantity="few">%1$d سجلات جرعات</item>
+        <item quantity="many">%1$d سجل جرعة</item>
+        <item quantity="other">%1$d سجل جرعة</item>
+    </plurals>
+    <string name="message_backup_saved">تم حفظ النسخة الاحتياطية</string>
+    <string name="message_backup_restored">تمت استعادة النسخة الاحتياطية</string>
+    <string name="message_backup_invalid">هذا الملف ليس نسخة احتياطية صالحة لتطبيق DoseTrack</string>
+    <string name="message_backup_failed">تعذّر الوصول إلى الملف</string>
+    <string name="message_data_cleared">تم مسح كل البيانات</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">تخطي</string>
+    <string name="onboarding_next">التالي</string>
+    <string name="onboarding_get_started">ابدأ الآن</string>
+    <string name="onboarding_page_indicator">الصفحة %1$d من %2$d</string>
+    <string name="onboarding_welcome_title">مرحبًا بك في DoseTrack</string>
+    <string name="onboarding_welcome_body">احتفظ بكل أدويتك في مكان واحد ولا تفوّت أي جرعة.</string>
+    <string name="onboarding_what_title">كيف يعمل</string>
+    <string name="onboarding_what_body">أضف أدويتك ومواعيد جرعاتها. يذكّرك DoseTrack في الوقت المناسب ويتيح لك تسجيل كل جرعة كمأخوذة أو متخطاة لتتابع سجلك. يعمل بالكامل دون إنترنت ولا يحتاج إلى حساب.\n\nDoseTrack أداة تذكير فقط، ولا يقدم نصائح طبية ولا يوصي بتغيير جرعاتك.</string>
+    <string name="onboarding_notifications_title">السماح بالتذكيرات</string>
+    <string name="onboarding_notifications_body">يحتاج DoseTrack إلى إذن الإشعارات ليذكّرك عند حلول موعد الجرعة.</string>
+    <string name="onboarding_notifications_granted">الإشعارات مسموح بها</string>
+    <string name="onboarding_reliable_title">تذكيرات موثوقة</string>
+    <string name="onboarding_reliable_body">بعض الهواتف تؤخر التذكيرات أو تمنعها لتوفير البطارية. لتصلك التذكيرات في موعدها، اسمح بالمنبهات واستثنِ DoseTrack من تحسين البطارية. يمكنك أيضًا ضبط الأدوية لترن مثل المنبه.</string>
+    <string name="onboarding_allow_exact">السماح بالمنبهات والتذكيرات</string>
+    <string name="onboarding_battery_settings">إعدادات تحسين البطارية</string>
+
     <!-- Notifications -->
     <string name="channel_reminders_name">تذكيرات الأدوية</string>
     <string name="channel_reminders_description">تذكير في كل موعد جرعة</string>

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,7 +32,8 @@ import com.dosetrack.app.ui.medications.MedicationDetailViewModel
 import com.dosetrack.app.ui.medications.MedicationEditScreen
 import com.dosetrack.app.ui.medications.MedicationEditViewModel
 import com.dosetrack.app.ui.medications.MedicationListScreen
-import com.dosetrack.app.ui.screens.PlaceholderScreen
+import com.dosetrack.app.ui.onboarding.OnboardingScreen
+import com.dosetrack.app.ui.settings.SettingsScreen
 import com.dosetrack.app.ui.today.TodayScreen
 
 object Routes {
@@ -41,6 +41,7 @@ object Routes {
     const val MEDICATIONS = "medications"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
+    const val ONBOARDING = "onboarding"
 
     const val MEDICATION_DETAIL = "medication/{${MedicationDetailViewModel.ARG_ID}}"
     const val MEDICATION_EDIT = "medication_edit?${MedicationEditViewModel.ARG_ID}={${MedicationEditViewModel.ARG_ID}}"
@@ -61,7 +62,7 @@ private enum class TopLevelDestination(
 }
 
 @Composable
-fun DoseTrackNavHost() {
+fun DoseTrackNavHost(startDestination: String) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
@@ -81,7 +82,8 @@ fun DoseTrackNavHost() {
                             selected = selected,
                             onClick = {
                                 navController.navigate(dest.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    // Today is the root tab (onboarding, when shown, is removed from the stack).
+                                    popUpTo(Routes.TODAY) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -96,9 +98,18 @@ fun DoseTrackNavHost() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Routes.TODAY,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding),
         ) {
+            composable(Routes.ONBOARDING) {
+                OnboardingScreen(
+                    onFinished = {
+                        navController.navigate(Routes.TODAY) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
+                    },
+                )
+            }
             composable(Routes.TODAY) {
                 TodayScreen(
                     onAddMedication = { navController.navigate(Routes.medicationEdit()) },
@@ -112,7 +123,7 @@ fun DoseTrackNavHost() {
                 )
             }
             composable(Routes.HISTORY) { HistoryScreen() }
-            composable(Routes.SETTINGS) { PlaceholderScreen(stringResource(R.string.nav_settings)) }
+            composable(Routes.SETTINGS) { SettingsScreen() }
 
             composable(
                 route = Routes.MEDICATION_DETAIL,

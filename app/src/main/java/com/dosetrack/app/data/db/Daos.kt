@@ -65,6 +65,9 @@ interface ScheduleDao {
 
     @Query("SELECT * FROM medication_schedules")
     suspend fun getAll(): List<ScheduleEntity>
+
+    @Query("DELETE FROM medication_schedules")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -137,4 +140,7 @@ interface DoseDao {
 
     @Query("SELECT id FROM doses WHERE status = 'PENDING'")
     suspend fun getAllPendingIds(): List<Long>
+
+    @Query("DELETE FROM doses")
+    suspend fun deleteAll()
 }
