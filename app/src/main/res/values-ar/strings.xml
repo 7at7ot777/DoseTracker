@@ -179,6 +179,49 @@
     <string name="type_drops">قطرات</string>
     <string name="type_other">أخرى</string>
 
+    <!-- Today -->
+    <string name="title_today">جرعات اليوم</string>
+    <string name="progress_title">تقدم اليوم</string>
+    <plurals name="progress_count">
+        <item quantity="zero">%1$d / %2$d جرعة مكتملة</item>
+        <item quantity="one">%1$d / %2$d جرعة مكتملة</item>
+        <item quantity="two">%1$d / %2$d جرعة مكتملة</item>
+        <item quantity="few">%1$d / %2$d جرعات مكتملة</item>
+        <item quantity="many">%1$d / %2$d جرعة مكتملة</item>
+        <item quantity="other">%1$d / %2$d جرعة مكتملة</item>
+    </plurals>
+    <string name="progress_details">فائتة: %1$d · متخطاة: %2$d</string>
+    <string name="today_no_doses_title">لا توجد جرعات مجدولة اليوم</string>
+    <string name="today_no_doses_message">ستظهر هنا جرعات أدويتك النشطة.</string>
+
+    <!-- Dose states -->
+    <string name="state_upcoming">قادمة</string>
+    <string name="state_due">حان الموعد</string>
+    <string name="state_taken">تم أخذها</string>
+    <string name="state_taken_at">أُخذت الساعة %1$s</string>
+    <string name="state_skipped">تم تخطيها</string>
+    <string name="state_missed">فائتة</string>
+
+    <!-- Dose actions -->
+    <string name="action_take">أخذ</string>
+    <string name="action_skip">تخطي</string>
+    <string name="action_mark_taken">تسجيل كمأخوذة</string>
+    <string name="action_mark_skipped">تسجيل كمتخطاة</string>
+    <string name="action_mark_not_taken">تسجيل كغير مأخوذة</string>
+    <string name="action_more_options">خيارات إضافية</string>
+    <string name="action_undo">تراجع</string>
+    <string name="confirm_take_title">تسجيل هذه الجرعة كمأخوذة؟</string>
+    <string name="confirm_dose_message">%1$s · %2$s</string>
+    <string name="confirm_skip_title">تخطي هذه الجرعة؟</string>
+    <string name="confirm_skip_message">سيتم تسجيلها كمتخطاة في سجلك.</string>
+    <string name="snackbar_taken">تم تسجيل %1$s كمأخوذة</string>
+    <string name="snackbar_skipped">تم تخطي %1$s</string>
+
+    <!-- Reminder notes derived from food instructions -->
+    <string name="reminder_food_before">يؤخذ قبل الأكل</string>
+    <string name="reminder_food_with">يؤخذ مع الأكل</string>
+    <string name="reminder_food_after">يؤخذ بعد الأكل</string>
+
     <!-- Food instructions -->
     <string name="food_any_time">أي وقت</string>
     <string name="food_before">قبل الأكل</string>

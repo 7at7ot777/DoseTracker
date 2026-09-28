@@ -147,6 +147,45 @@
     <string name="type_drops">Drops</string>
     <string name="type_other">Other</string>
 
+    <!-- Today -->
+    <string name="title_today">Today\'s Doses</string>
+    <string name="progress_title">Today\'s Progress</string>
+    <plurals name="progress_count">
+        <item quantity="one">%1$d / %2$d dose completed</item>
+        <item quantity="other">%1$d / %2$d doses completed</item>
+    </plurals>
+    <string name="progress_details">Missed: %1$d · Skipped: %2$d</string>
+    <string name="today_no_doses_title">No doses scheduled today</string>
+    <string name="today_no_doses_message">Doses for your active medications will appear here.</string>
+
+    <!-- Dose states -->
+    <string name="state_upcoming">Upcoming</string>
+    <string name="state_due">Due now</string>
+    <string name="state_taken">Taken</string>
+    <string name="state_taken_at">Taken at %1$s</string>
+    <string name="state_skipped">Skipped</string>
+    <string name="state_missed">Missed</string>
+
+    <!-- Dose actions -->
+    <string name="action_take">Take</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_mark_taken">Mark as Taken</string>
+    <string name="action_mark_skipped">Mark as skipped</string>
+    <string name="action_mark_not_taken">Mark as not taken</string>
+    <string name="action_more_options">More options</string>
+    <string name="action_undo">Undo</string>
+    <string name="confirm_take_title">Mark this dose as taken?</string>
+    <string name="confirm_dose_message">%1$s · %2$s</string>
+    <string name="confirm_skip_title">Skip this dose?</string>
+    <string name="confirm_skip_message">It will be recorded as skipped in your history.</string>
+    <string name="snackbar_taken">%1$s marked as taken</string>
+    <string name="snackbar_skipped">%1$s skipped</string>
+
+    <!-- Reminder notes derived from food instructions -->
+    <string name="reminder_food_before">Take before food</string>
+    <string name="reminder_food_with">Take with food</string>
+    <string name="reminder_food_after">Take after food</string>
+
     <!-- Food instructions -->
     <string name="food_any_time">Any time</string>
     <string name="food_before">Before food</string>

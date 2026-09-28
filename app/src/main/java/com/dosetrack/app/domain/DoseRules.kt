@@ -7,19 +7,30 @@ import java.time.LocalTime
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
-/** A pending dose becomes "missed" this long after its scheduled time. */
+/**
+ * A pending dose becomes "missed" this long after its scheduled time (or after its snooze time,
+ * whichever is later). Mirrored in the SQL of DoseDao.getPendingIdsOlderThan / markPendingMissedOlderThan.
+ */
 const val MISSED_AFTER_MILLIS: Long = 2 * 60 * 60 * 1000L
 
 /** What the UI shows for a dose. */
 enum class DoseDisplayState { UPCOMING, DUE, TAKEN, SKIPPED, MISSED }
 
-fun displayStateOf(status: DoseStatus, scheduledAt: Long, now: Long): DoseDisplayState = when (status) {
+/** The instant the missed-dose countdown starts from. */
+fun missedClockStart(scheduledAt: Long, snoozedUntil: Long?): Long = maxOf(scheduledAt, snoozedUntil ?: scheduledAt)
+
+fun displayStateOf(
+    status: DoseStatus,
+    scheduledAt: Long,
+    now: Long,
+    snoozedUntil: Long? = null,
+): DoseDisplayState = when (status) {
     DoseStatus.TAKEN -> DoseDisplayState.TAKEN
     DoseStatus.SKIPPED -> DoseDisplayState.SKIPPED
     DoseStatus.MISSED -> DoseDisplayState.MISSED
     DoseStatus.PENDING -> when {
         now < scheduledAt -> DoseDisplayState.UPCOMING
-        now < scheduledAt + MISSED_AFTER_MILLIS -> DoseDisplayState.DUE
+        now < missedClockStart(scheduledAt, snoozedUntil) + MISSED_AFTER_MILLIS -> DoseDisplayState.DUE
         else -> DoseDisplayState.MISSED
     }
 }

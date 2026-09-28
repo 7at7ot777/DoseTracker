@@ -107,10 +107,17 @@ interface DoseDao {
     @Query("SELECT * FROM doses WHERE status = 'PENDING' AND scheduledAt < :to ORDER BY scheduledAt")
     suspend fun getPendingBefore(to: Long): List<DoseWithMedication>
 
-    @Query("SELECT id FROM doses WHERE status = 'PENDING' AND scheduledAt < :threshold")
+    /** Missed clock starts at the later of scheduledAt and snoozedUntil (see domain.missedClockStart). */
+    @Query(
+        "SELECT id FROM doses WHERE status = 'PENDING' " +
+            "AND MAX(scheduledAt, COALESCE(snoozedUntil, scheduledAt)) < :threshold",
+    )
     suspend fun getPendingIdsOlderThan(threshold: Long): List<Long>
 
-    @Query("UPDATE doses SET status = 'MISSED', updatedAt = :now WHERE status = 'PENDING' AND scheduledAt < :threshold")
+    @Query(
+        "UPDATE doses SET status = 'MISSED', updatedAt = :now WHERE status = 'PENDING' " +
+            "AND MAX(scheduledAt, COALESCE(snoozedUntil, scheduledAt)) < :threshold",
+    )
     suspend fun markPendingMissedOlderThan(threshold: Long, now: Long)
 
     @Query("SELECT id FROM doses WHERE medicationId = :medicationId AND status = 'PENDING' AND scheduledAt >= :from")

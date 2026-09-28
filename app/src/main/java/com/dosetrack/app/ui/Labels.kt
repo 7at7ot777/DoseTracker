@@ -12,6 +12,7 @@ import com.dosetrack.app.data.model.DurationType
 import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationType
+import com.dosetrack.app.domain.ReminderNote
 import com.dosetrack.app.domain.ReminderText
 import java.time.LocalDate
 import java.util.Locale
@@ -114,6 +115,24 @@ object Labels {
         medication.durationDays,
         medication.endDate?.let(LocalDate::ofEpochDay),
         locale,
+    )
+
+    /** Localised text of the note shown on dose cards and reminders, or null when there is none. */
+    fun reminderNote(res: Resources, note: ReminderNote?): String? = when (note) {
+        null -> null
+        is ReminderNote.Text -> note.text
+        is ReminderNote.Food -> when (note.instruction) {
+            FoodInstruction.BEFORE_FOOD -> res.getString(R.string.reminder_food_before)
+            FoodInstruction.WITH_FOOD -> res.getString(R.string.reminder_food_with)
+            FoodInstruction.AFTER_FOOD -> res.getString(R.string.reminder_food_after)
+            FoodInstruction.ANY_TIME, FoodInstruction.CUSTOM -> null
+        }
+    }
+
+    /** Note for one dose: its per-time note, else the medication's instructions. */
+    fun doseNote(res: Resources, doseNote: String?, medication: MedicationEntity): String? = reminderNote(
+        res,
+        ReminderText.noteFor(doseNote, medication.foodInstruction, medication.customInstructions),
     )
 
     /** Fractional amounts ("2.5") use the "other" plural form in both English and Arabic. */

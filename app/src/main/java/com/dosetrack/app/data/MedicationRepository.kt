@@ -12,6 +12,7 @@ import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationStatus
 import com.dosetrack.app.data.model.MedicationType
+import com.dosetrack.app.domain.DoseSync
 import com.dosetrack.app.domain.MedicationDuration
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -46,6 +47,7 @@ data class ChangeResult(val medicationId: Long, val removedDoseIds: List<Long>)
 
 class MedicationRepository(
     private val db: AppDatabase,
+    private val doseSync: DoseSync,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val medicationDao = db.medicationDao()
@@ -60,7 +62,13 @@ class MedicationRepository(
 
     suspend fun get(id: Long): MedicationWithSchedules? = medicationDao.getWithSchedules(id)
 
-    suspend fun save(input: MedicationInput): ChangeResult = db.withTransaction {
+    suspend fun save(input: MedicationInput): ChangeResult {
+        val result = saveInTransaction(input)
+        doseSync.sync()
+        return result
+    }
+
+    private suspend fun saveInTransaction(input: MedicationInput): ChangeResult = db.withTransaction {
         val now = clock()
         val existing = input.id?.let { medicationDao.getWithSchedules(it) }
         val endDate = MedicationDuration.endDate(input.durationType, input.startDate, input.durationDays, input.endDate)
@@ -120,6 +128,7 @@ class MedicationRepository(
     /** Doses are generated again from now on (not back-filled for the paused period). */
     suspend fun resume(id: Long): ChangeResult {
         medicationDao.setStatusAndEffectiveFrom(id, MedicationStatus.ACTIVE, clock())
+        doseSync.sync()
         return ChangeResult(id, emptyList())
     }
 

@@ -33,6 +33,7 @@ import com.dosetrack.app.ui.medications.MedicationEditScreen
 import com.dosetrack.app.ui.medications.MedicationEditViewModel
 import com.dosetrack.app.ui.medications.MedicationListScreen
 import com.dosetrack.app.ui.screens.PlaceholderScreen
+import com.dosetrack.app.ui.today.TodayScreen
 
 object Routes {
     const val TODAY = "today"
@@ -97,7 +98,12 @@ fun DoseTrackNavHost() {
             startDestination = Routes.TODAY,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(Routes.TODAY) { PlaceholderScreen(stringResource(R.string.nav_today)) }
+            composable(Routes.TODAY) {
+                TodayScreen(
+                    onAddMedication = { navController.navigate(Routes.medicationEdit()) },
+                    onOpenMedication = { id -> navController.navigate(Routes.medicationDetail(id)) },
+                )
+            }
             composable(Routes.MEDICATIONS) {
                 MedicationListScreen(
                     onAddMedication = { navController.navigate(Routes.medicationEdit()) },
