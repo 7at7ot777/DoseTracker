@@ -12,6 +12,8 @@ import com.dosetrack.app.data.MedicationInput
 import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.ScheduleInput
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.data.db.effectiveReminderStyle
+import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.data.model.DosageUnit
 import com.dosetrack.app.data.model.DurationType
 import com.dosetrack.app.data.model.FoodInstruction
@@ -50,6 +52,7 @@ data class MedicationFormState(
     val foodInstruction: FoodInstruction = FoodInstruction.ANY_TIME,
     val customInstructions: String = "",
     val notes: String = "",
+    val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION,
     val showErrors: Boolean = false,
     val saving: Boolean = false,
     val saved: Boolean = false,
@@ -164,6 +167,7 @@ class MedicationEditViewModel(
         durationDays = if (durationType == DurationType.DAYS) MedicationDuration.parseDays(daysText) else null,
         endDate = if (durationType == DurationType.END_DATE) endDate else null,
         times = times.map { ScheduleInput(it.minutes, it.note) },
+        reminderStyle = reminderStyle,
     )
 
     private fun formFrom(data: MedicationWithSchedules): MedicationFormState {
@@ -185,6 +189,7 @@ class MedicationEditViewModel(
             foodInstruction = m.foodInstruction,
             customInstructions = m.customInstructions.orEmpty(),
             notes = m.notes.orEmpty(),
+            reminderStyle = m.effectiveReminderStyle,
         )
     }
 

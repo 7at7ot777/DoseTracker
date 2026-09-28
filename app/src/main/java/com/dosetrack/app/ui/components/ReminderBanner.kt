@@ -40,15 +40,21 @@ import com.dosetrack.app.appContainer
  * or reminders turned off) and offers the fix. Re-checks whenever the screen resumes.
  */
 @Composable
-fun ReminderHealthBanners(remindersEnabled: Boolean, modifier: Modifier = Modifier) {
+fun ReminderHealthBanners(
+    remindersEnabled: Boolean,
+    usesAlarmMode: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val container = context.appContainer
     var notificationsAllowed by remember { mutableStateOf(container.notificationHelper.canPost()) }
     var exactAllowed by remember { mutableStateOf(container.reminderManager.canScheduleExact()) }
+    var fullScreenAllowed by remember { mutableStateOf(container.notificationHelper.canUseFullScreenIntent()) }
 
     LifecycleResumeEffect(Unit) {
         notificationsAllowed = container.notificationHelper.canPost()
         exactAllowed = container.reminderManager.canScheduleExact()
+        fullScreenAllowed = container.notificationHelper.canUseFullScreenIntent()
         onPauseOrDispose { }
     }
 
@@ -90,6 +96,12 @@ fun ReminderHealthBanners(remindersEnabled: Boolean, modifier: Modifier = Modifi
                 actionLabel = stringResource(R.string.action_open_settings),
                 onAction = { openExactAlarmSettings(context) },
             )
+            usesAlarmMode && !fullScreenAllowed -> Banner(
+                title = stringResource(R.string.banner_fullscreen_title),
+                message = stringResource(R.string.banner_fullscreen_message),
+                actionLabel = stringResource(R.string.action_open_settings),
+                onAction = { openFullScreenIntentSettings(context) },
+            )
         }
     }
 }
@@ -128,6 +140,13 @@ fun openNotificationSettings(context: Context) {
 fun openExactAlarmSettings(context: Context) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
     val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${context.packageName}"))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+}
+
+fun openFullScreenIntentSettings(context: Context) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
+    val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:${context.packageName}"))
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
 }

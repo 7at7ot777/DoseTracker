@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -44,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -55,6 +59,7 @@ import com.dosetrack.app.data.model.DurationType
 import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationType
+import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.domain.DurationError
 import com.dosetrack.app.domain.MAX_DURATION_DAYS
 import com.dosetrack.app.domain.MedicationDuration
@@ -259,6 +264,34 @@ private fun EditForm(
         }
         if (MedicationFieldError.NO_TIMES in errors) ErrorText(stringResource(R.string.error_no_times))
         if (MedicationFieldError.DUPLICATE_TIMES in errors) ErrorText(stringResource(R.string.error_duplicate_times))
+
+        Text(stringResource(R.string.reminder_style_title), style = MaterialTheme.typography.titleSmall)
+        Column(modifier = Modifier.selectableGroup()) {
+            ReminderStyle.entries.forEach { style ->
+                val selected = state.reminderStyle == style
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp)
+                        .selectable(
+                            selected = selected,
+                            onClick = { viewModel.edit { copy(reminderStyle = style) } },
+                            role = Role.RadioButton,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = selected, onClick = null)
+                    Column(modifier = Modifier.padding(start = 12.dp)) {
+                        Text(Labels.reminderStyle(res, style), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = Labels.reminderStyleDescription(res, style),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
 
         // --- Duration ---
         SectionTitle(stringResource(R.string.section_duration))

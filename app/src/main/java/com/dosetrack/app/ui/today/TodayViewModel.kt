@@ -12,6 +12,9 @@ import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.SettingsRepository
 import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.MedicationEntity
+import com.dosetrack.app.data.db.effectiveReminderStyle
+import com.dosetrack.app.data.model.MedicationStatus
+import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.domain.DoseDisplayState
 import com.dosetrack.app.domain.DoseSync
 import com.dosetrack.app.domain.displayStateOf
@@ -47,6 +50,8 @@ data class TodayUiState(
     val doses: List<TodayDose> = emptyList(),
     val hasMedications: Boolean = false,
     val remindersEnabled: Boolean = true,
+    /** Any active medication rings as an alarm (needs full-screen alarm permission on Android 14+). */
+    val usesAlarmMode: Boolean = false,
     val defaultSnoozeMinutes: Int = AppSettings.DEFAULT_SNOOZE_MINUTES,
 ) {
     val total: Int get() = doses.size
@@ -109,6 +114,10 @@ class TodayViewModel(
             },
             hasMedications = medications.isNotEmpty(),
             remindersEnabled = settings.remindersEnabled,
+            usesAlarmMode = medications.any {
+                it.medication.status == MedicationStatus.ACTIVE &&
+                    it.medication.effectiveReminderStyle == ReminderStyle.ALARM
+            },
             defaultSnoozeMinutes = settings.snoozeMinutes,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())

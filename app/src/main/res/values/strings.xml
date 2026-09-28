@@ -189,6 +189,19 @@
     <string name="notification_action_snooze">Snooze %1$d min</string>
     <string name="notification_action_open">Open App</string>
 
+    <!-- Alarm mode -->
+    <string name="reminder_style_title">Reminder style</string>
+    <string name="reminder_style_notification">Notification</string>
+    <string name="reminder_style_notification_description">A notification with a short sound.</string>
+    <string name="reminder_style_alarm">Alarm</string>
+    <string name="reminder_style_alarm_description">Rings like an alarm until you respond, even when the phone is on silent.</string>
+    <string name="channel_alarms_name">Medication alarms</string>
+    <string name="channel_alarms_description">Rings at dose time for medications set to alarm mode</string>
+    <string name="notification_action_dismiss">Dismiss</string>
+    <string name="alarm_scheduled_for">Scheduled for %1$s</string>
+    <string name="banner_fullscreen_title">Allow full-screen alarms</string>
+    <string name="banner_fullscreen_message">Medications in alarm mode need this to show the alarm over the lock screen.</string>
+
     <!-- Snooze -->
     <string name="action_snooze">Snooze</string>
     <string name="snooze_title">Snooze %1$s</string>

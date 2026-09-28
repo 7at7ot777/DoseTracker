@@ -49,12 +49,15 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 val minutes = container.settingsRepository.current().snoozeMinutes
                 container.doseRepository.snooze(doseId, System.currentTimeMillis() + minutes * 60_000L)
             }
+            // Stops the alarm without recording anything; the dose stays Due, then Missed.
+            ACTION_DISMISS -> container.notificationHelper.cancel(doseId)
         }
     }
 
     companion object {
         const val ACTION_TAKE = "com.dosetrack.app.action.TAKE"
         const val ACTION_SNOOZE = "com.dosetrack.app.action.SNOOZE"
+        const val ACTION_DISMISS = "com.dosetrack.app.action.DISMISS"
     }
 }
 

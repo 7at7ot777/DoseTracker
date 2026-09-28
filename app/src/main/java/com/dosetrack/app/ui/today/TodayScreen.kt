@@ -192,7 +192,9 @@ private fun TodayList(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (state.hasMedications) {
-            item(key = "banners") { ReminderHealthBanners(remindersEnabled = state.remindersEnabled) }
+            item(key = "banners") {
+                ReminderHealthBanners(remindersEnabled = state.remindersEnabled, usesAlarmMode = state.usesAlarmMode)
+            }
         }
         item(key = "progress") { ProgressCard(state) }
         if (state.doses.isEmpty()) {

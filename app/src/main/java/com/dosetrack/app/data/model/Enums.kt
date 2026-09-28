@@ -25,6 +25,12 @@ enum class DurationType { ONGOING, DAYS, END_DATE }
 
 enum class FoodInstruction { ANY_TIME, BEFORE_FOOD, WITH_FOOD, AFTER_FOOD, CUSTOM }
 
+/**
+ * NOTIFICATION: normal notification with a short sound.
+ * ALARM: rings with the alarm tone until answered and shows a full-screen alarm.
+ */
+enum class ReminderStyle { NOTIFICATION, ALARM }
+
 /** ARCHIVED is the soft-delete state: hidden from lists, history kept. */
 enum class MedicationStatus { ACTIVE, PAUSED, ARCHIVED }
 

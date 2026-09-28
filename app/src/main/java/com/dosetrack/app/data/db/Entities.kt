@@ -14,6 +14,7 @@ import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationStatus
 import com.dosetrack.app.data.model.MedicationType
+import com.dosetrack.app.data.model.ReminderStyle
 
 @Entity(tableName = "medications")
 data class MedicationEntity(
@@ -41,7 +42,12 @@ data class MedicationEntity(
     val scheduleEffectiveFrom: Long,
     val createdAt: Long,
     val updatedAt: Long,
+    /** Added in DB v4; null (rows from before) means [ReminderStyle.NOTIFICATION]. */
+    val reminderStyle: ReminderStyle? = null,
 )
+
+val MedicationEntity.effectiveReminderStyle: ReminderStyle
+    get() = reminderStyle ?: ReminderStyle.NOTIFICATION
 
 @Entity(
     tableName = "medication_schedules",

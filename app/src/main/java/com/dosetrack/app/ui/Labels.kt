@@ -12,6 +12,7 @@ import com.dosetrack.app.data.model.DurationType
 import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationType
+import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.domain.ReminderNote
 import com.dosetrack.app.domain.ReminderText
 import java.time.LocalDate
@@ -115,6 +116,20 @@ object Labels {
         medication.durationDays,
         medication.endDate?.let(LocalDate::ofEpochDay),
         locale,
+    )
+
+    fun reminderStyle(res: Resources, style: ReminderStyle): String = res.getString(
+        when (style) {
+            ReminderStyle.NOTIFICATION -> R.string.reminder_style_notification
+            ReminderStyle.ALARM -> R.string.reminder_style_alarm
+        },
+    )
+
+    fun reminderStyleDescription(res: Resources, style: ReminderStyle): String = res.getString(
+        when (style) {
+            ReminderStyle.NOTIFICATION -> R.string.reminder_style_notification_description
+            ReminderStyle.ALARM -> R.string.reminder_style_alarm_description
+        },
     )
 
     /** Localised text of the note shown on dose cards and reminders, or null when there is none. */

@@ -225,6 +225,19 @@
     <string name="notification_action_snooze">غفوة %1$d د</string>
     <string name="notification_action_open">فتح التطبيق</string>
 
+    <!-- Alarm mode -->
+    <string name="reminder_style_title">نوع التذكير</string>
+    <string name="reminder_style_notification">إشعار</string>
+    <string name="reminder_style_notification_description">إشعار مع صوت قصير.</string>
+    <string name="reminder_style_alarm">منبه</string>
+    <string name="reminder_style_alarm_description">يرن مثل المنبه حتى تستجيب، حتى لو كان الهاتف على الوضع الصامت.</string>
+    <string name="channel_alarms_name">منبهات الأدوية</string>
+    <string name="channel_alarms_description">يرن في موعد الجرعة للأدوية المضبوطة على وضع المنبه</string>
+    <string name="notification_action_dismiss">إيقاف</string>
+    <string name="alarm_scheduled_for">موعدها %1$s</string>
+    <string name="banner_fullscreen_title">السماح بالمنبهات بملء الشاشة</string>
+    <string name="banner_fullscreen_message">الأدوية في وضع المنبه تحتاج هذا الإذن لعرض المنبه فوق شاشة القفل.</string>
+
     <!-- Snooze -->
     <string name="action_snooze">غفوة</string>
     <string name="snooze_title">تأجيل تذكير %1$s</string>

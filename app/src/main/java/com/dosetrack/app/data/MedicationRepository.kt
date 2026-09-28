@@ -12,6 +12,7 @@ import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.Frequency
 import com.dosetrack.app.data.model.MedicationStatus
 import com.dosetrack.app.data.model.MedicationType
+import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.domain.DoseSync
 import com.dosetrack.app.domain.MedicationDuration
 import com.dosetrack.app.reminders.ReminderManager
@@ -38,6 +39,7 @@ data class MedicationInput(
     val durationDays: Int?,
     val endDate: LocalDate?,
     val times: List<ScheduleInput>,
+    val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION,
 )
 
 /**
@@ -102,6 +104,7 @@ class MedicationRepository(
             scheduleEffectiveFrom = if (scheduleChanged) now else existing!!.medication.scheduleEffectiveFrom,
             createdAt = existing?.medication?.createdAt ?: now,
             updatedAt = now,
+            reminderStyle = input.reminderStyle,
         )
 
         val id: Long

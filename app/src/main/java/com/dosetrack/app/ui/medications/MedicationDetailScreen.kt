@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dosetrack.app.R
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.data.db.effectiveReminderStyle
 import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.MedicationStatus
 import com.dosetrack.app.ui.Formats
@@ -175,6 +176,10 @@ private fun DetailContent(
                     Formats.date(LocalDate.ofEpochDay(medication.startDate), locale),
                 )
                 DetailRow(stringResource(R.string.detail_duration), Labels.duration(res, medication, locale))
+                DetailRow(
+                    stringResource(R.string.reminder_style_title),
+                    Labels.reminderStyle(res, medication.effectiveReminderStyle),
+                )
             }
         }
 

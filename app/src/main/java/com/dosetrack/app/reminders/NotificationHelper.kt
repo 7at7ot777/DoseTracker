@@ -1,6 +1,7 @@
 package com.dosetrack.app.reminders
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.LocaleList
@@ -19,7 +22,10 @@ import com.dosetrack.app.MainActivity
 import com.dosetrack.app.R
 import com.dosetrack.app.data.AppSettings
 import com.dosetrack.app.data.db.DoseWithMedication
+import com.dosetrack.app.data.db.effectiveReminderStyle
+import com.dosetrack.app.data.model.ReminderStyle
 import com.dosetrack.app.ui.Labels
+import com.dosetrack.app.ui.alarm.AlarmActivity
 
 class NotificationHelper(private val context: Context) {
     private val manager = context.getSystemService(NotificationManager::class.java)
@@ -41,7 +47,7 @@ class NotificationHelper(private val context: Context) {
                 enableVibration(settings.vibrationEnabled)
                 if (settings.vibrationEnabled) vibrationPattern = longArrayOf(0, 400, 200, 400)
                 if (!settings.soundEnabled) setSound(null, null)
-                lockscreenVisibility = android.app.Notification.VISIBILITY_PRIVATE
+                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
             }
             manager.createNotificationChannel(channel)
         }
@@ -58,26 +64,25 @@ class NotificationHelper(private val context: Context) {
      */
     fun showDoseReminder(item: DoseWithMedication, settings: AppSettings) {
         if (!canPost()) return
-        val channelId = ensureChannel(settings)
-        val res = localizedContext().resources
         val dose = item.dose
         val medication = item.medication
+        val isAlarm = medication.effectiveReminderStyle == ReminderStyle.ALARM
+        val channelId = if (isAlarm) ensureAlarmChannel() else ensureChannel(settings)
+        val res = localizedContext().resources
         val doseLine = Labels.doseLine(res, medication)
         val note = Labels.doseNote(res, dose.reminderNote, medication)
         val body = listOfNotNull(doseLine, note).joinToString("\n")
         val notificationId = notificationId(dose.id)
         val openApp = openAppIntent(notificationId)
 
-        val notification = NotificationCompat.Builder(context, channelId)
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(res.getString(R.string.notification_title, medication.name))
             .setContentText(doseLine)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
-            .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setWhen(dose.scheduledAt)
             .setShowWhen(true)
-            .setAutoCancel(true)
             .setContentIntent(openApp)
             .addAction(
                 0,
@@ -89,8 +94,30 @@ class NotificationHelper(private val context: Context) {
                 res.getString(R.string.notification_action_snooze, settings.snoozeMinutes),
                 actionIntent(NotificationActionReceiver.ACTION_SNOOZE, dose.id),
             )
-            .addAction(0, res.getString(R.string.notification_action_open), openApp)
-            .build()
+
+        if (isAlarm) {
+            // Rings (looping, see FLAG_INSISTENT below) until Taken / Snooze / Dismiss or the timeout.
+            builder
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setFullScreenIntent(alarmScreenIntent(dose.id), true)
+                .setTimeoutAfter(ALARM_TIMEOUT_MILLIS)
+                .addAction(
+                    0,
+                    res.getString(R.string.notification_action_dismiss),
+                    actionIntent(NotificationActionReceiver.ACTION_DISMISS, dose.id),
+                )
+        } else {
+            builder
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setAutoCancel(true)
+                .addAction(0, res.getString(R.string.notification_action_open), openApp)
+        }
+
+        val notification = builder.build()
+        if (isAlarm) notification.flags = notification.flags or Notification.FLAG_INSISTENT
 
         try {
             NotificationManagerCompat.from(context).notify(notificationId, notification)
@@ -98,6 +125,41 @@ class NotificationHelper(private val context: Context) {
             // Permission revoked between the check and the call; nothing to show.
         }
     }
+
+    /**
+     * Alarm-style reminders: alarm ringtone on the alarm stream (plays even when the ringer is
+     * silent). Separate from the "reminders_*" channels, so their cleanup never removes it.
+     */
+    fun ensureAlarmChannel(): String {
+        if (manager.getNotificationChannel(ALARM_CHANNEL_ID) == null) {
+            val res = localizedContext().resources
+            val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val channel = NotificationChannel(
+                ALARM_CHANNEL_ID,
+                res.getString(R.string.channel_alarms_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = res.getString(R.string.channel_alarms_description)
+                setSound(
+                    sound,
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build(),
+                )
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 800, 400, 800)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            }
+            manager.createNotificationChannel(channel)
+        }
+        return ALARM_CHANNEL_ID
+    }
+
+    /** Android 14+ lets users revoke full-screen alarms; without it an alarm shows as a heads-up. */
+    fun canUseFullScreenIntent(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || manager.canUseFullScreenIntent()
 
     fun cancel(doseId: Long) {
         NotificationManagerCompat.from(context).cancel(notificationId(doseId))
@@ -124,6 +186,19 @@ class NotificationHelper(private val context: Context) {
         return PendingIntent.getActivity(
             context,
             requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    private fun alarmScreenIntent(doseId: Long): PendingIntent {
+        val intent = Intent(context, AlarmActivity::class.java)
+            .setData(Uri.parse("dosetrack://alarm/$doseId"))
+            .putExtra(EXTRA_DOSE_ID, doseId)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
+        return PendingIntent.getActivity(
+            context,
+            notificationId(doseId),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -157,6 +232,10 @@ class NotificationHelper(private val context: Context) {
     companion object {
         const val EXTRA_DOSE_ID = "dose_id"
         private const val CHANNEL_PREFIX = "reminders_"
+        private const val ALARM_CHANNEL_ID = "dose_alarms_v1"
+
+        /** An unanswered alarm stops ringing after this long; the dose stays Due / becomes Missed. */
+        const val ALARM_TIMEOUT_MILLIS = 10L * 60 * 1000
 
         fun channelId(sound: Boolean, vibration: Boolean) =
             "${CHANNEL_PREFIX}s${if (sound) 1 else 0}_v${if (vibration) 1 else 0}"
