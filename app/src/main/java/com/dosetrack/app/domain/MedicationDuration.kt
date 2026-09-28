@@ -37,6 +37,7 @@ object MedicationDuration {
         }
 
     /** Parses the numeric "Number of days" field; only plain positive whole numbers are accepted. */
-    fun parseDays(input: String): Int? = input.trim().takeIf { s -> s.isNotEmpty() && s.all { it.isDigit() } }
+    fun parseDays(input: String): Int? = Digits.normalize(input).trim()
+        .takeIf { s -> s.isNotEmpty() && s.all { it in '0'..'9' } }
         ?.toIntOrNull()
 }

@@ -6,4 +6,183 @@
     <string name="nav_medications">الأدوية</string>
     <string name="nav_history">السجل</string>
     <string name="nav_settings">الإعدادات</string>
+    <string name="navigate_back">رجوع</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">موافق</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_save">حفظ</string>
+    <string name="action_edit">تعديل</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_pause">إيقاف مؤقت</string>
+    <string name="action_resume">استئناف</string>
+    <string name="action_add_medication">إضافة دواء</string>
+    <string name="action_add_time">إضافة موعد</string>
+    <string name="action_remove_time">حذف الموعد</string>
+    <string name="action_choose_end_date">اختر تاريخ الانتهاء</string>
+
+    <!-- Relative date/time -->
+    <string name="today_at">اليوم، %1$s</string>
+    <string name="tomorrow_at">غدًا، %1$s</string>
+    <string name="date_at">%1$s، %2$s</string>
+
+    <!-- Medication list -->
+    <string name="medications_empty_title">لا توجد أدوية بعد</string>
+    <string name="medications_empty_message">أضف أول دواء لتبدأ في متابعة جرعاتك.</string>
+    <string name="next_dose">الجرعة التالية: %1$s</string>
+    <string name="next_dose_none">لا توجد جرعات قادمة</string>
+    <string name="next_dose_paused">التذكيرات متوقفة مؤقتًا</string>
+    <string name="status_active">نشط</string>
+    <string name="status_paused">متوقف مؤقتًا</string>
+
+    <!-- Medication detail -->
+    <string name="medication_not_found">تعذّر العثور على هذا الدواء.</string>
+    <string name="detail_schedule">الجدول</string>
+    <string name="detail_duration">المدة</string>
+    <string name="detail_times">مواعيد الجرعات</string>
+    <string name="detail_instructions">التعليمات</string>
+    <string name="paused_info">متوقف مؤقتًا — لن يتم إنشاء تذكيرات جديدة. سجلك لم يتغير.</string>
+    <string name="delete_confirm_title">حذف هذا الدواء؟</string>
+    <string name="delete_confirm_message">سيُزال من قائمتك وستتوقف تذكيراته. سيتم الاحتفاظ بسجل الجرعات السابقة.</string>
+
+    <!-- Add / edit form -->
+    <string name="title_add_medication">إضافة دواء</string>
+    <string name="title_edit_medication">تعديل الدواء</string>
+    <string name="section_medication">الدواء</string>
+    <string name="section_schedule">الجدول</string>
+    <string name="section_duration">المدة</string>
+    <string name="section_instructions">التعليمات</string>
+    <string name="field_name">اسم الدواء</string>
+    <string name="field_generic_name">الاسم العلمي</string>
+    <string name="field_generic_name_optional">الاسم العلمي (اختياري)</string>
+    <string name="field_amount">كمية الجرعة</string>
+    <string name="field_unit">الوحدة</string>
+    <string name="field_strength">التركيز (اختياري)</string>
+    <string name="field_strength_hint">مثال: 10 ملغ</string>
+    <string name="field_type">نوع الدواء</string>
+    <string name="field_time_note_hint">ملاحظة لهذا الموعد (اختياري)</string>
+    <string name="field_start_date">تاريخ البدء</string>
+    <string name="start_date_value">تاريخ البدء: %1$s</string>
+    <string name="end_date_value">تاريخ الانتهاء: %1$s</string>
+    <string name="field_days">عدد الأيام</string>
+    <string name="field_custom_instructions">التعليمات (تظهر في التذكيرات)</string>
+    <string name="field_custom_instructions_hint">مثال: يؤخذ بعد الإفطار</string>
+    <string name="field_notes">ملاحظات</string>
+    <string name="field_notes_optional">ملاحظات (اختياري)</string>
+
+    <string name="error_name_required">أدخل اسم الدواء</string>
+    <string name="error_amount_invalid">أدخل كمية أكبر من 0</string>
+    <string name="error_no_times">أضف موعد جرعة واحدًا على الأقل</string>
+    <string name="error_duplicate_times">لا يمكن إضافة نفس الموعد أكثر من مرة</string>
+    <string name="error_duplicate_time_short">مكرر</string>
+    <string name="error_days_required">أدخل عدد الأيام</string>
+    <string name="error_days_positive">استخدم رقمًا صحيحًا أكبر من 0</string>
+    <string name="error_days_too_large">الحد الأقصى %1$d يوم</string>
+    <string name="error_end_date_required">اختر تاريخ الانتهاء</string>
+    <string name="error_end_before_start">لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء</string>
+    <string name="error_fix_fields">يرجى تصحيح الحقول المحددة</string>
+
+    <!-- Duration -->
+    <string name="duration_ongoing">مستمر</string>
+    <string name="duration_option_days">أيام</string>
+    <string name="duration_option_end_date">تاريخ الانتهاء</string>
+    <string name="duration_ongoing_info">بدون تاريخ انتهاء — تستمر التذكيرات حتى تقوم بإيقافه أو حذفه.</string>
+    <string name="duration_until">حتى %1$s</string>
+    <plurals name="duration_course">
+        <item quantity="zero">دورة لمدة %1$d يوم · تنتهي %2$s</item>
+        <item quantity="one">دورة لمدة يوم واحد · تنتهي %2$s</item>
+        <item quantity="two">دورة لمدة يومين · تنتهي %2$s</item>
+        <item quantity="few">دورة لمدة %1$d أيام · تنتهي %2$s</item>
+        <item quantity="many">دورة لمدة %1$d يومًا · تنتهي %2$s</item>
+        <item quantity="other">دورة لمدة %1$d يوم · تنتهي %2$s</item>
+    </plurals>
+
+    <!-- Frequency -->
+    <string name="frequency_once">مرة يوميًا</string>
+    <string name="frequency_twice">مرتان يوميًا</string>
+    <string name="frequency_three">ثلاث مرات يوميًا</string>
+    <string name="frequency_four">أربع مرات يوميًا</string>
+    <string name="frequency_custom">مخصص</string>
+    <plurals name="frequency_custom_times">
+        <item quantity="zero">%1$d مرة يوميًا</item>
+        <item quantity="one">مرة واحدة يوميًا</item>
+        <item quantity="two">مرتان يوميًا</item>
+        <item quantity="few">%1$d مرات يوميًا</item>
+        <item quantity="many">%1$d مرة يوميًا</item>
+        <item quantity="other">%1$d مرة يوميًا</item>
+    </plurals>
+
+    <!-- Dosage units (picker) -->
+    <string name="unit_tablet">قرص</string>
+    <string name="unit_capsule">كبسولة</string>
+    <string name="unit_ml">مل</string>
+    <string name="unit_mg">ملغ</string>
+    <string name="unit_drops">قطرات</string>
+    <string name="unit_other">أخرى</string>
+
+    <!-- Dosage amounts -->
+    <plurals name="amount_tablet">
+        <item quantity="zero">%1$s قرص</item>
+        <item quantity="one">%1$s قرص</item>
+        <item quantity="two">%1$s قرص</item>
+        <item quantity="few">%1$s أقراص</item>
+        <item quantity="many">%1$s قرصًا</item>
+        <item quantity="other">%1$s قرص</item>
+    </plurals>
+    <plurals name="amount_capsule">
+        <item quantity="zero">%1$s كبسولة</item>
+        <item quantity="one">%1$s كبسولة</item>
+        <item quantity="two">%1$s كبسولة</item>
+        <item quantity="few">%1$s كبسولات</item>
+        <item quantity="many">%1$s كبسولة</item>
+        <item quantity="other">%1$s كبسولة</item>
+    </plurals>
+    <plurals name="amount_ml">
+        <item quantity="zero">%1$s مل</item>
+        <item quantity="one">%1$s مل</item>
+        <item quantity="two">%1$s مل</item>
+        <item quantity="few">%1$s مل</item>
+        <item quantity="many">%1$s مل</item>
+        <item quantity="other">%1$s مل</item>
+    </plurals>
+    <plurals name="amount_mg">
+        <item quantity="zero">%1$s ملغ</item>
+        <item quantity="one">%1$s ملغ</item>
+        <item quantity="two">%1$s ملغ</item>
+        <item quantity="few">%1$s ملغ</item>
+        <item quantity="many">%1$s ملغ</item>
+        <item quantity="other">%1$s ملغ</item>
+    </plurals>
+    <plurals name="amount_drops">
+        <item quantity="zero">%1$s قطرة</item>
+        <item quantity="one">%1$s قطرة</item>
+        <item quantity="two">%1$s قطرة</item>
+        <item quantity="few">%1$s قطرات</item>
+        <item quantity="many">%1$s قطرة</item>
+        <item quantity="other">%1$s قطرة</item>
+    </plurals>
+    <plurals name="amount_other">
+        <item quantity="zero">%1$s وحدة</item>
+        <item quantity="one">%1$s وحدة</item>
+        <item quantity="two">%1$s وحدة</item>
+        <item quantity="few">%1$s وحدات</item>
+        <item quantity="many">%1$s وحدة</item>
+        <item quantity="other">%1$s وحدة</item>
+    </plurals>
+
+    <!-- Medication types -->
+    <string name="type_tablet">أقراص</string>
+    <string name="type_capsule">كبسولات</string>
+    <string name="type_liquid">سائل</string>
+    <string name="type_injection">حقن</string>
+    <string name="type_cream">كريم</string>
+    <string name="type_drops">قطرات</string>
+    <string name="type_other">أخرى</string>
+
+    <!-- Food instructions -->
+    <string name="food_any_time">أي وقت</string>
+    <string name="food_before">قبل الأكل</string>
+    <string name="food_with">مع الأكل</string>
+    <string name="food_after">بعد الأكل</string>
+    <string name="food_custom">مخصص</string>
 </resources>

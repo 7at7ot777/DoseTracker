@@ -20,11 +20,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.dosetrack.app.R
+import com.dosetrack.app.ui.medications.MedicationDetailScreen
+import com.dosetrack.app.ui.medications.MedicationDetailViewModel
+import com.dosetrack.app.ui.medications.MedicationEditScreen
+import com.dosetrack.app.ui.medications.MedicationEditViewModel
+import com.dosetrack.app.ui.medications.MedicationListScreen
 import com.dosetrack.app.ui.screens.PlaceholderScreen
 
 object Routes {
@@ -32,6 +39,12 @@ object Routes {
     const val MEDICATIONS = "medications"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
+
+    const val MEDICATION_DETAIL = "medication/{${MedicationDetailViewModel.ARG_ID}}"
+    const val MEDICATION_EDIT = "medication_edit?${MedicationEditViewModel.ARG_ID}={${MedicationEditViewModel.ARG_ID}}"
+
+    fun medicationDetail(id: Long) = "medication/$id"
+    fun medicationEdit(id: Long? = null) = "medication_edit?${MedicationEditViewModel.ARG_ID}=${id ?: -1L}"
 }
 
 private enum class TopLevelDestination(
@@ -85,9 +98,38 @@ fun DoseTrackNavHost() {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(Routes.TODAY) { PlaceholderScreen(stringResource(R.string.nav_today)) }
-            composable(Routes.MEDICATIONS) { PlaceholderScreen(stringResource(R.string.nav_medications)) }
+            composable(Routes.MEDICATIONS) {
+                MedicationListScreen(
+                    onAddMedication = { navController.navigate(Routes.medicationEdit()) },
+                    onOpenMedication = { id -> navController.navigate(Routes.medicationDetail(id)) },
+                )
+            }
             composable(Routes.HISTORY) { PlaceholderScreen(stringResource(R.string.nav_history)) }
             composable(Routes.SETTINGS) { PlaceholderScreen(stringResource(R.string.nav_settings)) }
+
+            composable(
+                route = Routes.MEDICATION_DETAIL,
+                arguments = listOf(navArgument(MedicationDetailViewModel.ARG_ID) { type = NavType.LongType }),
+            ) {
+                MedicationDetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onEdit = { id -> navController.navigate(Routes.medicationEdit(id)) },
+                )
+            }
+            composable(
+                route = Routes.MEDICATION_EDIT,
+                arguments = listOf(
+                    navArgument(MedicationEditViewModel.ARG_ID) {
+                        type = NavType.LongType
+                        defaultValue = -1L
+                    },
+                ),
+            ) {
+                MedicationEditScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() },
+                )
+            }
         }
     }
 }

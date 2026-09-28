@@ -6,4 +6,151 @@
     <string name="nav_medications">Medications</string>
     <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
+    <string name="navigate_back">Back</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_add_medication">Add Medication</string>
+    <string name="action_add_time">Add time</string>
+    <string name="action_remove_time">Remove time</string>
+    <string name="action_choose_end_date">Choose end date</string>
+
+    <!-- Relative date/time -->
+    <string name="today_at">Today, %1$s</string>
+    <string name="tomorrow_at">Tomorrow, %1$s</string>
+    <string name="date_at">%1$s, %2$s</string>
+
+    <!-- Medication list -->
+    <string name="medications_empty_title">No medications yet</string>
+    <string name="medications_empty_message">Add your first medication to start tracking your doses.</string>
+    <string name="next_dose">Next dose: %1$s</string>
+    <string name="next_dose_none">No upcoming doses</string>
+    <string name="next_dose_paused">Reminders paused</string>
+    <string name="status_active">Active</string>
+    <string name="status_paused">Paused</string>
+
+    <!-- Medication detail -->
+    <string name="medication_not_found">This medication could not be found.</string>
+    <string name="detail_schedule">Schedule</string>
+    <string name="detail_duration">Duration</string>
+    <string name="detail_times">Dose times</string>
+    <string name="detail_instructions">Instructions</string>
+    <string name="paused_info">Paused — no new reminders are created. Your history is unchanged.</string>
+    <string name="delete_confirm_title">Delete this medication?</string>
+    <string name="delete_confirm_message">It will be removed from your list and its reminders will stop. Your past dose history will be kept.</string>
+
+    <!-- Add / edit form -->
+    <string name="title_add_medication">Add Medication</string>
+    <string name="title_edit_medication">Edit Medication</string>
+    <string name="section_medication">Medication</string>
+    <string name="section_schedule">Schedule</string>
+    <string name="section_duration">Duration</string>
+    <string name="section_instructions">Instructions</string>
+    <string name="field_name">Medication name</string>
+    <string name="field_generic_name">Generic name</string>
+    <string name="field_generic_name_optional">Generic name (optional)</string>
+    <string name="field_amount">Dose amount</string>
+    <string name="field_unit">Unit</string>
+    <string name="field_strength">Strength (optional)</string>
+    <string name="field_strength_hint">e.g. 10 mg</string>
+    <string name="field_type">Medication type</string>
+    <string name="field_time_note_hint">Note for this time (optional)</string>
+    <string name="field_start_date">Start date</string>
+    <string name="start_date_value">Start date: %1$s</string>
+    <string name="end_date_value">End date: %1$s</string>
+    <string name="field_days">Number of days</string>
+    <string name="field_custom_instructions">Instructions (shown in reminders)</string>
+    <string name="field_custom_instructions_hint">e.g. Take after breakfast</string>
+    <string name="field_notes">Notes</string>
+    <string name="field_notes_optional">Notes (optional)</string>
+
+    <string name="error_name_required">Enter the medication name</string>
+    <string name="error_amount_invalid">Enter an amount greater than 0</string>
+    <string name="error_no_times">Add at least one dose time</string>
+    <string name="error_duplicate_times">Each dose time can only be added once</string>
+    <string name="error_duplicate_time_short">Duplicate</string>
+    <string name="error_days_required">Enter the number of days</string>
+    <string name="error_days_positive">Use a whole number greater than 0</string>
+    <string name="error_days_too_large">Maximum is %1$d days</string>
+    <string name="error_end_date_required">Choose an end date</string>
+    <string name="error_end_before_start">End date can\'t be before the start date</string>
+    <string name="error_fix_fields">Please fix the highlighted fields</string>
+
+    <!-- Duration -->
+    <string name="duration_ongoing">Ongoing</string>
+    <string name="duration_option_days">Days</string>
+    <string name="duration_option_end_date">End date</string>
+    <string name="duration_ongoing_info">No end date — reminders continue until you pause or delete it.</string>
+    <string name="duration_until">Until %1$s</string>
+    <plurals name="duration_course">
+        <item quantity="one">%1$d-day course · Ends %2$s</item>
+        <item quantity="other">%1$d-day course · Ends %2$s</item>
+    </plurals>
+
+    <!-- Frequency -->
+    <string name="frequency_once">Once daily</string>
+    <string name="frequency_twice">Twice daily</string>
+    <string name="frequency_three">Three times daily</string>
+    <string name="frequency_four">Four times daily</string>
+    <string name="frequency_custom">Custom</string>
+    <plurals name="frequency_custom_times">
+        <item quantity="one">%1$d time a day</item>
+        <item quantity="other">%1$d times a day</item>
+    </plurals>
+
+    <!-- Dosage units (picker) -->
+    <string name="unit_tablet">Tablet</string>
+    <string name="unit_capsule">Capsule</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_mg">mg</string>
+    <string name="unit_drops">Drops</string>
+    <string name="unit_other">Other</string>
+
+    <!-- Dosage amounts -->
+    <plurals name="amount_tablet">
+        <item quantity="one">%1$s tablet</item>
+        <item quantity="other">%1$s tablets</item>
+    </plurals>
+    <plurals name="amount_capsule">
+        <item quantity="one">%1$s capsule</item>
+        <item quantity="other">%1$s capsules</item>
+    </plurals>
+    <plurals name="amount_ml">
+        <item quantity="one">%1$s ml</item>
+        <item quantity="other">%1$s ml</item>
+    </plurals>
+    <plurals name="amount_mg">
+        <item quantity="one">%1$s mg</item>
+        <item quantity="other">%1$s mg</item>
+    </plurals>
+    <plurals name="amount_drops">
+        <item quantity="one">%1$s drop</item>
+        <item quantity="other">%1$s drops</item>
+    </plurals>
+    <plurals name="amount_other">
+        <item quantity="one">%1$s unit</item>
+        <item quantity="other">%1$s units</item>
+    </plurals>
+
+    <!-- Medication types -->
+    <string name="type_tablet">Tablet</string>
+    <string name="type_capsule">Capsule</string>
+    <string name="type_liquid">Liquid</string>
+    <string name="type_injection">Injection</string>
+    <string name="type_cream">Cream</string>
+    <string name="type_drops">Drops</string>
+    <string name="type_other">Other</string>
+
+    <!-- Food instructions -->
+    <string name="food_any_time">Any time</string>
+    <string name="food_before">Before food</string>
+    <string name="food_with">With food</string>
+    <string name="food_after">After food</string>
+    <string name="food_custom">Custom</string>
 </resources>

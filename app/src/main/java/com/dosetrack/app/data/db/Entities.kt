@@ -113,6 +113,11 @@ data class DoseWithMedication(
     val medication: MedicationEntity,
 )
 
+data class NextDose(
+    @ColumnInfo(name = "medicationId") val medicationId: Long,
+    @ColumnInfo(name = "nextAt") val nextAt: Long,
+)
+
 data class StatusCount(
     @ColumnInfo(name = "status") val status: DoseStatus,
     @ColumnInfo(name = "count") val count: Int,

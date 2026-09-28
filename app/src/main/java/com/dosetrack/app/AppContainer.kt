@@ -1,6 +1,7 @@
 package com.dosetrack.app
 
 import android.content.Context
+import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.SettingsRepository
 import com.dosetrack.app.data.db.AppDatabase
 
@@ -10,6 +11,7 @@ class AppContainer(context: Context) {
 
     val database: AppDatabase = AppDatabase.build(appContext)
     val settingsRepository = SettingsRepository(appContext)
+    val medicationRepository = MedicationRepository(database)
 }
 
 val Context.appContainer: AppContainer

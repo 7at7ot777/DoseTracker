@@ -97,6 +97,12 @@ interface DoseDao {
     @Query("SELECT MIN(scheduledAt) FROM doses WHERE medicationId = :medicationId AND status = 'PENDING' AND scheduledAt >= :from")
     fun observeNextPendingTime(medicationId: Long, from: Long): Flow<Long?>
 
+    @Query(
+        "SELECT medicationId, MIN(scheduledAt) AS nextAt FROM doses " +
+            "WHERE status = 'PENDING' AND scheduledAt >= :from GROUP BY medicationId",
+    )
+    fun observeNextPendingPerMedication(from: Long): Flow<List<NextDose>>
+
     @Transaction
     @Query("SELECT * FROM doses WHERE status = 'PENDING' AND scheduledAt < :to ORDER BY scheduledAt")
     suspend fun getPendingBefore(to: Long): List<DoseWithMedication>
