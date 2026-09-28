@@ -1,6 +1,7 @@
 package com.dosetrack.app.reminders
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -67,6 +68,8 @@ class NotificationHelper(private val context: Context) {
      *
      * [profile] is the dose's owner (not the profile shown in the app).
      */
+    // POST_NOTIFICATIONS is checked by canPost() (lint can't see through the helper).
+    @SuppressLint("MissingPermission")
     fun showDoseReminder(item: DoseWithMedication, profile: ProfileEntity?, settings: AppSettings) {
         if (!canPost()) return
         val dose = item.dose

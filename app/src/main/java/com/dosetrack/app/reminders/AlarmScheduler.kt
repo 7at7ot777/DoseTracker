@@ -1,5 +1,6 @@
 package com.dosetrack.app.reminders
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -11,6 +12,8 @@ import android.os.Build
 class AlarmScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
+    // Exact alarms are only used when canScheduleExact() allows them (lint can't see through the helper).
+    @SuppressLint("ScheduleExactAlarm")
     fun schedule(doseId: Long, triggerAt: Long) {
         val pendingIntent = pendingIntent(doseId, PendingIntent.FLAG_UPDATE_CURRENT) ?: return
         if (canScheduleExact()) {
