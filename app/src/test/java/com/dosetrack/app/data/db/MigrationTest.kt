@@ -24,7 +24,6 @@ import org.robolectric.annotation.SQLiteMode
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
-// Native mode = real, modern SQLite (DROP COLUMN needs 3.35+).
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class MigrationTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
@@ -44,8 +43,21 @@ class MigrationTest {
             close()
         }
         SQLiteDatabase.openDatabase(context.getDatabasePath(dbName).path, null, SQLiteDatabase.OPEN_READWRITE).use { db ->
+            // Robolectric's SQLite lacks ALTER TABLE DROP COLUMN, so recreate the (still empty)
+            // medications table from Room's own DDL without the v5 profileId column.
+            val v5Ddl = db.rawQuery(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'medications'",
+                null,
+            ).use { cursor ->
+                cursor.moveToFirst()
+                cursor.getString(0)
+            }
+            val v4Ddl = v5Ddl.replace(", `profileId` INTEGER NOT NULL DEFAULT 1", "")
+            check(v4Ddl != v5Ddl) { "profileId column not found in Room's DDL: $v5Ddl" }
+            // Foreign keys are off on this raw connection, so the parent table can be replaced.
             db.execSQL("DROP INDEX `index_medications_profileId`")
-            db.execSQL("ALTER TABLE `medications` DROP COLUMN `profileId`")
+            db.execSQL("DROP TABLE `medications`")
+            db.execSQL(v4Ddl)
             db.execSQL("DROP TABLE `profiles`")
             db.execSQL("DROP TABLE IF EXISTS `room_master_table`")
             db.execSQL(
