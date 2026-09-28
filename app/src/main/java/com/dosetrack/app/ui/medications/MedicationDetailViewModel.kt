@@ -9,18 +9,25 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.domain.AdherenceStats
+import com.dosetrack.app.domain.DoseDisplayState
+import com.dosetrack.app.domain.displayStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class MedicationDetailUiState(
     val loading: Boolean = true,
     val data: MedicationWithSchedules? = null,
+    val stats: AdherenceStats = AdherenceStats.EMPTY,
+    /** Most recent past doses with their display state, newest first. */
+    val recentDoses: List<Pair<DoseEntity, DoseDisplayState>> = emptyList(),
 )
 
 class MedicationDetailViewModel(
@@ -28,10 +35,22 @@ class MedicationDetailViewModel(
     private val repository: MedicationRepository,
 ) : ViewModel() {
     private val medicationId: Long = checkNotNull(savedStateHandle.get<Long>(ARG_ID))
+    private val openedAt = System.currentTimeMillis()
 
-    val state: StateFlow<MedicationDetailUiState> = repository.observe(medicationId)
-        .map { MedicationDetailUiState(loading = false, data = it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MedicationDetailUiState())
+    val state: StateFlow<MedicationDetailUiState> = combine(
+        repository.observe(medicationId),
+        repository.observeStatusCounts(medicationId),
+        repository.observeRecentDoses(medicationId, before = openedAt, limit = RECENT_LIMIT),
+    ) { data, counts, recent ->
+        MedicationDetailUiState(
+            loading = false,
+            data = data,
+            stats = AdherenceStats.from(counts.associate { it.status to it.count }),
+            recentDoses = recent.map {
+                it to displayStateOf(it.status, it.scheduledAt, openedAt, it.snoozedUntil)
+            },
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MedicationDetailUiState())
 
     private val _deleted = MutableStateFlow(false)
     val deleted: StateFlow<Boolean> = _deleted.asStateFlow()
@@ -53,6 +72,7 @@ class MedicationDetailViewModel(
 
     companion object {
         const val ARG_ID = "id"
+        private const val RECENT_LIMIT = 10
 
         val Factory = viewModelFactory {
             initializer {

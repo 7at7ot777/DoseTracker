@@ -217,6 +217,26 @@
     <string name="snackbar_taken">تم تسجيل %1$s كمأخوذة</string>
     <string name="snackbar_skipped">تم تخطي %1$s</string>
 
+    <!-- History & adherence -->
+    <string name="history_title">السجل</string>
+    <string name="week_title">هذا الأسبوع</string>
+    <string name="percent_value">%1$d٪</string>
+    <string name="adherence_counts">مأخوذة %1$d · فائتة %2$d · متخطاة %3$d</string>
+    <string name="adherence_none">لا توجد جرعات مسجلة بعد</string>
+    <string name="adherence_disclaimer">للمتابعة الشخصية فقط — وليس تقييمًا طبيًا.</string>
+    <string name="week_chart_description">آخر 7 أيام: %1$d٪ مأخوذة. مأخوذة %2$d، فائتة %3$d، متخطاة %4$d.</string>
+    <string name="history_previous_day">اليوم السابق</string>
+    <string name="history_next_day">اليوم التالي</string>
+    <string name="history_today">الانتقال إلى اليوم</string>
+    <string name="history_empty_day">لا توجد جرعات في هذا اليوم</string>
+    <string name="history_empty_day_message">ستظهر هنا الجرعات المجدولة لهذا التاريخ.</string>
+    <string name="correct_title">تصحيح هذا السجل</string>
+    <string name="action_mark_missed">تسجيل كفائتة</string>
+    <string name="action_change_taken_time">تغيير وقت الأخذ</string>
+    <string name="status_archived">مؤرشف</string>
+    <string name="detail_record_title">سجلك</string>
+    <string name="detail_recent_doses">الجرعات الأخيرة</string>
+
     <!-- Notifications -->
     <string name="channel_reminders_name">تذكيرات الأدوية</string>
     <string name="channel_reminders_description">تذكير في كل موعد جرعة</string>

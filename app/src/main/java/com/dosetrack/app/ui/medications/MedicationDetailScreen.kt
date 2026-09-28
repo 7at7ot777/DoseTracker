@@ -43,7 +43,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dosetrack.app.R
+import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.domain.AdherenceStats
+import com.dosetrack.app.domain.DoseDisplayState
+import com.dosetrack.app.ui.components.DoseStatusBadge
+import java.time.Instant
+import java.time.ZoneId
 import com.dosetrack.app.data.db.effectiveReminderStyle
 import com.dosetrack.app.data.model.FoodInstruction
 import com.dosetrack.app.data.model.MedicationStatus
@@ -80,7 +86,7 @@ fun MedicationDetailScreen(
                     }
                 },
                 actions = {
-                    if (data != null) {
+                    if (data != null && data.medication.status != MedicationStatus.ARCHIVED) {
                         IconButton(onClick = { onEdit(data.medication.id) }) {
                             Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.action_edit))
                         }
@@ -99,6 +105,8 @@ fun MedicationDetailScreen(
             )
             else -> DetailContent(
                 data = data,
+                stats = state.stats,
+                recentDoses = state.recentDoses,
                 onPause = viewModel::pause,
                 onResume = viewModel::resume,
                 onDelete = { confirmDelete = true },
@@ -125,6 +133,8 @@ fun MedicationDetailScreen(
 @Composable
 private fun DetailContent(
     data: MedicationWithSchedules,
+    stats: AdherenceStats,
+    recentDoses: List<Pair<DoseEntity, DoseDisplayState>>,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onDelete: () -> Unit,
@@ -135,6 +145,7 @@ private fun DetailContent(
     val is24 = is24HourClock()
     val medication = data.medication
     val paused = medication.status == MedicationStatus.PAUSED
+    val archived = medication.status == MedicationStatus.ARCHIVED
 
     Column(
         modifier = modifier
@@ -149,10 +160,17 @@ private fun DetailContent(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
+            val inactive = paused || archived
             StatusBadge(
-                text = stringResource(if (paused) R.string.status_paused else R.string.status_active),
-                containerColor = if (paused) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
-                contentColor = if (paused) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
+                text = stringResource(
+                    when {
+                        archived -> R.string.status_archived
+                        paused -> R.string.status_paused
+                        else -> R.string.status_active
+                    },
+                ),
+                containerColor = if (inactive) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+                contentColor = if (inactive) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
         if (paused) {
@@ -219,27 +237,93 @@ private fun DetailContent(
             }
         }
 
-        OutlinedButton(
-            onClick = if (paused) onResume else onPause,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp),
-        ) {
-            Icon(if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause, contentDescription = null)
-            Text(
-                text = stringResource(if (paused) R.string.action_resume else R.string.action_pause),
-                modifier = Modifier.padding(start = 8.dp),
-            )
+        RecordCard(stats = stats, recentDoses = recentDoses)
+
+        // An archived (deleted) medication is only viewable, for its history.
+        if (!archived) {
+            OutlinedButton(
+                onClick = if (paused) onResume else onPause,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp),
+            ) {
+                Icon(if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause, contentDescription = null)
+                Text(
+                    text = stringResource(if (paused) R.string.action_resume else R.string.action_pause),
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+            TextButton(
+                onClick = onDelete,
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp),
+            ) {
+                Icon(Icons.Filled.Delete, contentDescription = null)
+                Text(text = stringResource(R.string.action_delete), modifier = Modifier.padding(start = 8.dp))
+            }
         }
-        TextButton(
-            onClick = onDelete,
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp),
-        ) {
-            Icon(Icons.Filled.Delete, contentDescription = null)
-            Text(text = stringResource(R.string.action_delete), modifier = Modifier.padding(start = 8.dp))
+    }
+}
+
+/** This medication's adherence and its most recent past doses. */
+@Composable
+private fun RecordCard(stats: AdherenceStats, recentDoses: List<Pair<DoseEntity, DoseDisplayState>>) {
+    val locale = currentLocale()
+    val is24 = is24HourClock()
+    val zone = ZoneId.systemDefault()
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.detail_record_title), style = MaterialTheme.typography.titleMedium)
+            if (stats.total == 0) {
+                Text(
+                    text = stringResource(R.string.adherence_none),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stats.percent?.let { stringResource(R.string.percent_value, it) } ?: "—",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = stringResource(R.string.adherence_counts, stats.taken, stats.missed, stats.skipped),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+            if (recentDoses.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.detail_recent_doses),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                recentDoses.forEachIndexed { index, (dose, state) ->
+                    if (index > 0) HorizontalDivider()
+                    val date = Instant.ofEpochMilli(dose.scheduledAt).atZone(zone).toLocalDate()
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                        Text(
+                            text = stringResource(
+                                R.string.date_at,
+                                Formats.date(date, locale),
+                                Formats.time(dose.scheduledAt, is24, locale),
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
+                        )
+                        DoseStatusBadge(
+                            state = state,
+                            takenAtText = dose.takenAt?.let { Formats.time(it, is24, locale) },
+                        )
+                    }
+                }
+            }
         }
     }
 }

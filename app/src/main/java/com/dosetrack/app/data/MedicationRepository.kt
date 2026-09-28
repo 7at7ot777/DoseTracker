@@ -2,6 +2,8 @@ package com.dosetrack.app.data
 
 import androidx.room.withTransaction
 import com.dosetrack.app.data.db.AppDatabase
+import com.dosetrack.app.data.db.DoseEntity
+import com.dosetrack.app.data.db.StatusCount
 import com.dosetrack.app.data.db.MedicationEntity
 import com.dosetrack.app.data.db.MedicationWithSchedules
 import com.dosetrack.app.data.db.NextDose
@@ -65,6 +67,11 @@ class MedicationRepository(
     fun observeNextDoses(from: Long): Flow<List<NextDose>> = doseDao.observeNextPendingPerMedication(from)
 
     suspend fun get(id: Long): MedicationWithSchedules? = medicationDao.getWithSchedules(id)
+
+    fun observeStatusCounts(id: Long): Flow<List<StatusCount>> = doseDao.observeStatusCountsForMedication(id)
+
+    fun observeRecentDoses(id: Long, before: Long, limit: Int): Flow<List<DoseEntity>> =
+        doseDao.observeRecentForMedication(id, before, limit)
 
     suspend fun save(input: MedicationInput): ChangeResult {
         val result = saveInTransaction(input)

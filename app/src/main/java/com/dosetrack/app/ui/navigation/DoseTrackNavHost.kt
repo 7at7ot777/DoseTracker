@@ -27,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dosetrack.app.R
+import com.dosetrack.app.ui.history.HistoryScreen
 import com.dosetrack.app.ui.medications.MedicationDetailScreen
 import com.dosetrack.app.ui.medications.MedicationDetailViewModel
 import com.dosetrack.app.ui.medications.MedicationEditScreen
@@ -110,7 +111,7 @@ fun DoseTrackNavHost() {
                     onOpenMedication = { id -> navController.navigate(Routes.medicationDetail(id)) },
                 )
             }
-            composable(Routes.HISTORY) { PlaceholderScreen(stringResource(R.string.nav_history)) }
+            composable(Routes.HISTORY) { HistoryScreen() }
             composable(Routes.SETTINGS) { PlaceholderScreen(stringResource(R.string.nav_settings)) }
 
             composable(
