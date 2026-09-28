@@ -42,6 +42,8 @@ data class MedicationInput(
     val endDate: LocalDate?,
     val times: List<ScheduleInput>,
     val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION,
+    /** Profile for a new medication; an edited medication always keeps its own profile. */
+    val profileId: Long,
 )
 
 /**
@@ -60,9 +62,12 @@ class MedicationRepository(
     private val scheduleDao = db.scheduleDao()
     private val doseDao = db.doseDao()
 
-    fun observeVisible(): Flow<List<MedicationWithSchedules>> = medicationDao.observeVisibleWithSchedules()
+    fun observeVisible(profileId: Long): Flow<List<MedicationWithSchedules>> =
+        medicationDao.observeVisibleWithSchedules(profileId)
 
     fun observe(id: Long): Flow<MedicationWithSchedules?> = medicationDao.observeWithSchedules(id)
+
+    fun observeAnyAlarmMode(): Flow<Boolean> = medicationDao.observeAnyAlarmMode()
 
     fun observeNextDoses(from: Long): Flow<List<NextDose>> = doseDao.observeNextPendingPerMedication(from)
 
@@ -112,6 +117,7 @@ class MedicationRepository(
             createdAt = existing?.medication?.createdAt ?: now,
             updatedAt = now,
             reminderStyle = input.reminderStyle,
+            profileId = existing?.medication?.profileId ?: input.profileId,
         )
 
         val id: Long

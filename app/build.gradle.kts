@@ -61,6 +61,11 @@ android {
         buildConfig = true
     }
 
+    // Robolectric (database migration tests) needs merged Android resources in unit tests.
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
     // Lint runs in CI as a report only; it never fails the build.
     lint {
         abortOnError = false
@@ -96,6 +101,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -9,12 +9,13 @@ import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.AppSettings
 import com.dosetrack.app.data.DoseRepository
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.ProfileRepository
+import com.dosetrack.app.data.ProfileSelection
 import com.dosetrack.app.data.SettingsRepository
 import com.dosetrack.app.data.db.DoseEntity
+import com.dosetrack.app.data.db.DoseWithMedication
 import com.dosetrack.app.data.db.MedicationEntity
-import com.dosetrack.app.data.db.effectiveReminderStyle
-import com.dosetrack.app.data.model.MedicationStatus
-import com.dosetrack.app.data.model.ReminderStyle
+import com.dosetrack.app.data.db.ProfileEntity
 import com.dosetrack.app.domain.DoseDisplayState
 import com.dosetrack.app.domain.DoseSync
 import com.dosetrack.app.domain.displayStateOf
@@ -43,13 +44,18 @@ data class TodayDose(
     val dose: DoseEntity,
     val medication: MedicationEntity,
     val state: DoseDisplayState,
+    /** Owner of the medication (shown as a chip in the "Everyone" view). */
+    val profile: ProfileEntity?,
 )
 
 data class TodayUiState(
     val loading: Boolean = true,
     val date: LocalDate = LocalDate.now(),
     val doses: List<TodayDose> = emptyList(),
+    /** Medications exist for what's shown (active profile, or anyone in "Everyone"). */
     val hasMedications: Boolean = false,
+    val selection: ProfileSelection? = null,
+    val profiles: List<ProfileEntity> = emptyList(),
     val remindersEnabled: Boolean = true,
     /** Any active medication rings as an alarm (needs full-screen alarm permission on Android 14+). */
     val usesAlarmMode: Boolean = false,
@@ -71,6 +77,7 @@ class TodayViewModel(
     private val doseRepository: DoseRepository,
     medicationRepository: MedicationRepository,
     settingsRepository: SettingsRepository,
+    private val profileRepository: ProfileRepository,
     private val doseSync: DoseSync,
 ) : ViewModel() {
 
@@ -94,35 +101,56 @@ class TodayViewModel(
      * Syncs when the screen starts and whenever the day rolls over (creates the new day's doses,
      * records misses, re-arms alarms); alarms and the background worker cover the rest.
      */
-    private val dosesOfDay = ticks
+    private val days = ticks
         .map { it.second }
         .distinctUntilChanged()
         .onEach { doseSync.sync() }
-        .flatMapLatest { day -> doseRepository.observeDay(day).map { day to it } }
+
+    private data class DayDoses(val day: LocalDate, val selection: ProfileSelection, val doses: List<DoseWithMedication>)
+
+    /** Only the view changes with the selection; reminders never depend on it. */
+    private val dosesOfDay = combine(days, profileRepository.selection) { day, selection -> day to selection }
+        .distinctUntilChanged()
+        .flatMapLatest { (day, selection) ->
+            val profileId = if (selection.everyone) null else selection.profile.id
+            doseRepository.observeDay(day, profileId).map { DayDoses(day, selection, it) }
+        }
+
+    private val profilesAndCounts = combine(
+        profileRepository.observeAll(),
+        profileRepository.observeMedicationCounts(),
+    ) { profiles, counts -> profiles to counts.associate { it.profileId to it.count } }
 
     val state: StateFlow<TodayUiState> = combine(
         ticks,
         dosesOfDay,
-        medicationRepository.observeVisible(),
+        profilesAndCounts,
         settingsRepository.settings,
-    ) { tick, dayDoses, medications, settings ->
+        medicationRepository.observeAnyAlarmMode(),
+    ) { tick, dayDoses, (profiles, counts), settings, anyAlarmMode ->
         val now = tick.first
+        val selection = dayDoses.selection
+        val profilesById = profiles.associateBy { it.id }
         TodayUiState(
             loading = false,
-            date = dayDoses.first,
-            doses = dayDoses.second.map { item ->
+            date = dayDoses.day,
+            doses = dayDoses.doses.map { item ->
                 TodayDose(
                     dose = item.dose,
                     medication = item.medication,
                     state = displayStateOf(item.dose.status, item.dose.scheduledAt, now, item.dose.snoozedUntil),
+                    profile = profilesById[item.medication.profileId],
                 )
             },
-            hasMedications = medications.isNotEmpty(),
-            remindersEnabled = settings.remindersEnabled,
-            usesAlarmMode = medications.any {
-                it.medication.status == MedicationStatus.ACTIVE &&
-                    it.medication.effectiveReminderStyle == ReminderStyle.ALARM
+            hasMedications = if (selection.everyone) {
+                counts.values.any { it > 0 }
+            } else {
+                (counts[selection.profile.id] ?: 0) > 0
             },
+            selection = selection,
+            profiles = profiles,
+            remindersEnabled = settings.remindersEnabled,
+            usesAlarmMode = anyAlarmMode,
             defaultSnoozeMinutes = settings.snoozeMinutes,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())
@@ -166,6 +194,7 @@ class TodayViewModel(
                     container.doseRepository,
                     container.medicationRepository,
                     container.settingsRepository,
+                    container.profileRepository,
                     container.doseSync,
                 )
             }

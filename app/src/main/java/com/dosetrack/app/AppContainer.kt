@@ -3,6 +3,7 @@ package com.dosetrack.app
 import android.content.Context
 import com.dosetrack.app.data.DoseRepository
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.ProfileRepository
 import com.dosetrack.app.data.SettingsRepository
 import com.dosetrack.app.data.backup.BackupManager
 import com.dosetrack.app.data.db.AppDatabase
@@ -13,6 +14,7 @@ import com.dosetrack.app.reminders.ReminderManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import java.io.File
 
 /** Manual dependency container; one instance per process, owned by [DoseTrackApplication]. */
 class AppContainer(context: Context) {
@@ -27,8 +29,16 @@ class AppContainer(context: Context) {
     val reminderManager = ReminderManager(database, settingsRepository, AlarmScheduler(appContext), notificationHelper)
     val doseSync = DoseSync(database, reminderManager)
     val doseRepository = DoseRepository(database, reminderManager)
+    val profileRepository = ProfileRepository(
+        db = database,
+        settingsRepository = settingsRepository,
+        reminders = reminderManager,
+        contentResolver = appContext.contentResolver,
+        avatarDir = File(appContext.filesDir, "avatars"),
+        defaultProfileName = { appContext.getString(R.string.profile_default_name) },
+    )
     val medicationRepository = MedicationRepository(database, doseSync, reminderManager)
-    val backupManager = BackupManager(database, reminderManager, notificationHelper, doseSync)
+    val backupManager = BackupManager(database, reminderManager, notificationHelper, doseSync, profileRepository)
 }
 
 val Context.appContainer: AppContainer

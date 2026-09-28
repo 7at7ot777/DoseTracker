@@ -20,7 +20,10 @@ class DoseTrackApplication : Application() {
         container.notificationHelper.ensureChannel(settings)
 
         // Create upcoming doses, record misses from while the app was closed, and (re)arm alarms.
-        container.applicationScope.launch { container.doseSync.sync() }
+        container.applicationScope.launch {
+            container.profileRepository.ensureDefaultProfile()
+            container.doseSync.sync()
+        }
         SyncWorker.schedule(this)
     }
 }

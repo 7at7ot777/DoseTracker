@@ -7,6 +7,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.DoseRepository
+import com.dosetrack.app.data.ProfileRepository
+import com.dosetrack.app.data.db.ProfileEntity
 import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.DoseWithMedication
 import com.dosetrack.app.data.db.MedicationEntity
@@ -47,6 +49,7 @@ data class HistoryUiState(
     val rows: List<HistoryRow> = emptyList(),
     val week: List<DayAdherence> = emptyList(),
     val weekStats: AdherenceStats = AdherenceStats.EMPTY,
+    val profile: ProfileEntity? = null,
 )
 
 sealed interface Correction {
@@ -56,7 +59,12 @@ sealed interface Correction {
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class HistoryViewModel(private val doseRepository: DoseRepository) : ViewModel() {
+class HistoryViewModel(
+    private val doseRepository: DoseRepository,
+    profileRepository: ProfileRepository,
+) : ViewModel() {
+    private val activeProfile = profileRepository.activeProfile
+
     private val zone: ZoneId get() = ZoneId.systemDefault()
     private val selectedDate = MutableStateFlow(LocalDate.now())
 
@@ -72,15 +80,17 @@ class HistoryViewModel(private val doseRepository: DoseRepository) : ViewModel()
         .map { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }
         .distinctUntilChanged()
 
-    private val dayDoses = selectedDate.flatMapLatest { date ->
-        doseRepository.observeDay(date).map { date to it }
-    }
+    private val dayDoses = combine(selectedDate, activeProfile) { date, profile -> date to profile.id }
+        .distinctUntilChanged()
+        .flatMapLatest { (date, profileId) -> doseRepository.observeDay(date, profileId).map { date to it } }
 
-    private val weekDoses = today.flatMapLatest { day ->
-        doseRepository.observeRange(day.minusDays(WEEK_DAYS - 1L), day).map { day to it }
-    }
+    private val weekDoses = combine(today, activeProfile) { day, profile -> day to profile.id }
+        .distinctUntilChanged()
+        .flatMapLatest { (day, profileId) ->
+            doseRepository.observeRange(day.minusDays(WEEK_DAYS - 1L), day, profileId).map { day to it }
+        }
 
-    val state: StateFlow<HistoryUiState> = combine(clock, dayDoses, weekDoses) { now, day, week ->
+    val state: StateFlow<HistoryUiState> = combine(clock, dayDoses, weekDoses, activeProfile) { now, day, week, profile ->
         val todayDate = week.first
         val weekStates = week.second.map { it.dose.scheduledAt to it.displayState(now) }
         val buckets = AdherenceBuckets.daily(weekStates, todayDate, zone, WEEK_DAYS)
@@ -91,6 +101,7 @@ class HistoryViewModel(private val doseRepository: DoseRepository) : ViewModel()
             rows = day.second.map { HistoryRow(it.dose, it.medication, it.displayState(now)) },
             week = buckets,
             weekStats = AdherenceBuckets.total(buckets),
+            profile = profile,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HistoryUiState())
 
@@ -121,7 +132,8 @@ class HistoryViewModel(private val doseRepository: DoseRepository) : ViewModel()
 
         val Factory = viewModelFactory {
             initializer {
-                HistoryViewModel(this[APPLICATION_KEY]!!.appContainer.doseRepository)
+                val container = this[APPLICATION_KEY]!!.appContainer
+                HistoryViewModel(container.doseRepository, container.profileRepository)
             }
         }
     }

@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">DoseTrack</string>
 
+    <!-- Profiles -->
+    <string name="profile_default_name">أنا</string>
+
     <!-- Navigation -->
     <string name="nav_today">اليوم</string>
     <string name="nav_medications">الأدوية</string>

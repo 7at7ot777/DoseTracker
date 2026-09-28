@@ -16,11 +16,12 @@ class DoseRepository(
 ) {
     private val doseDao = db.doseDao()
 
-    fun observeDay(date: LocalDate, zone: ZoneId = ZoneId.systemDefault()): Flow<List<DoseWithMedication>> =
-        doseDao.observeInRange(
-            date.atStartOfDay(zone).toInstant().toEpochMilli(),
-            date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
-        )
+    /** Doses of one local day for [profileId], or for every profile when it is null. */
+    fun observeDay(
+        date: LocalDate,
+        profileId: Long?,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Flow<List<DoseWithMedication>> = observeRange(date, date, profileId, zone)
 
     suspend fun get(id: Long): DoseWithMedication? = doseDao.getWithMedication(id)
 
@@ -37,15 +38,21 @@ class DoseRepository(
     /** Correction from history: the dose was not taken. */
     suspend fun markMissed(id: Long): DoseEntity? = changeStatus(id, DoseStatus.MISSED)
 
-    /** Doses scheduled from the start of [from] to the end of [toInclusive] (local days). */
+    /** Doses from the start of [from] to the end of [toInclusive] (local days); null profile = everyone. */
     fun observeRange(
         from: LocalDate,
         toInclusive: LocalDate,
+        profileId: Long?,
         zone: ZoneId = ZoneId.systemDefault(),
-    ): Flow<List<DoseWithMedication>> = doseDao.observeInRange(
-        from.atStartOfDay(zone).toInstant().toEpochMilli(),
-        toInclusive.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
-    )
+    ): Flow<List<DoseWithMedication>> {
+        val start = from.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = toInclusive.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        return if (profileId == null) {
+            doseDao.observeInRange(start, end)
+        } else {
+            doseDao.observeInRangeForProfile(start, end, profileId)
+        }
+    }
 
     /** Correction: clears a taken/skipped record; it becomes Due or Missed again by the clock. */
     suspend fun markNotTaken(id: Long): DoseEntity? = changeStatus(id, DoseStatus.PENDING)

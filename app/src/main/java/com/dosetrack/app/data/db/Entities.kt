@@ -16,7 +16,20 @@ import com.dosetrack.app.data.model.MedicationStatus
 import com.dosetrack.app.data.model.MedicationType
 import com.dosetrack.app.data.model.ReminderStyle
 
-@Entity(tableName = "medications")
+/** A person whose medications are tracked (DB v5). At least one profile always exists. */
+@Entity(tableName = "profiles")
+data class ProfileEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    /** ARGB colour for the avatar/accent; null = theme default. */
+    val colorArgb: Int? = null,
+    /** Absolute path of the avatar photo in app-private storage. */
+    val photoPath: String? = null,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+@Entity(tableName = "medications", indices = [Index(value = ["profileId"])])
 data class MedicationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
@@ -44,6 +57,11 @@ data class MedicationEntity(
     val updatedAt: Long,
     /** Added in DB v4; null (rows from before) means [ReminderStyle.NOTIFICATION]. */
     val reminderStyle: ReminderStyle? = null,
+    /**
+     * Owning profile (DB v5). No SQL foreign key: deleting a profile removes its medications in
+     * ProfileRepository.delete; rows from before v5 belong to profile 1.
+     */
+    @ColumnInfo(defaultValue = "1") val profileId: Long = 1,
 )
 
 val MedicationEntity.effectiveReminderStyle: ReminderStyle
@@ -117,6 +135,11 @@ data class DoseWithMedication(
     @Embedded val dose: DoseEntity,
     @Relation(parentColumn = "medicationId", entityColumn = "id")
     val medication: MedicationEntity,
+)
+
+data class ProfileMedicationCount(
+    @ColumnInfo(name = "profileId") val profileId: Long,
+    @ColumnInfo(name = "count") val count: Int,
 )
 
 data class NextDose(

@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
             DoseTrackTheme {
                 // Start destination depends on whether onboarding was completed; decided once.
                 val settings by produceState<AppSettings?>(initialValue = null) {
+                    // Every screen assumes at least one profile exists.
+                    container.profileRepository.ensureDefaultProfile()
                     value = settingsRepository.current()
                 }
                 val loaded = settings

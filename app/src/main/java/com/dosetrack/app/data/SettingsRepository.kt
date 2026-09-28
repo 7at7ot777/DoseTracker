@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,13 @@ data class AppSettings(
     val soundEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    /**
+     * Profile shown in the UI. UI state only: reminder scheduling and notifications never read it,
+     * so switching profiles can't affect any reminder.
+     */
+    val activeProfileId: Long = 1,
+    /** Today shows every profile's doses ("Everyone") instead of only the active profile. */
+    val todayShowsEveryone: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_SNOOZE_MINUTES = 10
@@ -47,6 +55,8 @@ class SettingsRepository(context: Context) {
         val SOUND_ENABLED = booleanPreferencesKey("sound_enabled")
         val VIBRATION_ENABLED = booleanPreferencesKey("vibration_enabled")
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val ACTIVE_PROFILE_ID = longPreferencesKey("active_profile_id")
+        val TODAY_SHOWS_EVERYONE = booleanPreferencesKey("today_shows_everyone")
     }
 
     val settings: Flow<AppSettings> = dataStore.data
@@ -62,6 +72,8 @@ class SettingsRepository(context: Context) {
                 themeMode = prefs[Keys.THEME_MODE]
                     ?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } }
                     ?: defaults.themeMode,
+                activeProfileId = prefs[Keys.ACTIVE_PROFILE_ID] ?: defaults.activeProfileId,
+                todayShowsEveryone = prefs[Keys.TODAY_SHOWS_EVERYONE] ?: defaults.todayShowsEveryone,
             )
         }
 
@@ -78,4 +90,12 @@ class SettingsRepository(context: Context) {
     suspend fun setVibrationEnabled(enabled: Boolean) = dataStore.edit { it[Keys.VIBRATION_ENABLED] = enabled }
 
     suspend fun setThemeMode(mode: ThemeMode) = dataStore.edit { it[Keys.THEME_MODE] = mode.name }
+
+    /** Selecting a profile also leaves Today's "Everyone" view. */
+    suspend fun setActiveProfile(profileId: Long) = dataStore.edit {
+        it[Keys.ACTIVE_PROFILE_ID] = profileId
+        it[Keys.TODAY_SHOWS_EVERYONE] = false
+    }
+
+    suspend fun setTodayShowsEveryone(everyone: Boolean) = dataStore.edit { it[Keys.TODAY_SHOWS_EVERYONE] = everyone }
 }

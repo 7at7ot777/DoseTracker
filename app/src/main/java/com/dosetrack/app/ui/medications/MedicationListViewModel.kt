@@ -7,7 +7,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.ProfileRepository
 import com.dosetrack.app.data.db.MedicationWithSchedules
+import com.dosetrack.app.data.db.ProfileEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,10 +24,14 @@ data class MedicationListItem(val data: MedicationWithSchedules, val nextDoseAt:
 data class MedicationListUiState(
     val loading: Boolean = true,
     val items: List<MedicationListItem> = emptyList(),
+    val profile: ProfileEntity? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MedicationListViewModel(repository: MedicationRepository) : ViewModel() {
+class MedicationListViewModel(
+    repository: MedicationRepository,
+    profileRepository: ProfileRepository,
+) : ViewModel() {
     /** "Next dose" must move on as doses pass, so the lower bound follows the clock. */
     private val nextDoses = flow {
         while (true) {
@@ -34,14 +40,18 @@ class MedicationListViewModel(repository: MedicationRepository) : ViewModel() {
         }
     }.flatMapLatest { now -> repository.observeNextDoses(now) }
 
+    private val activeProfile = profileRepository.activeProfile
+
     val state: StateFlow<MedicationListUiState> = combine(
-        repository.observeVisible(),
+        activeProfile.flatMapLatest { profile -> repository.observeVisible(profile.id) },
         nextDoses,
-    ) { medications, next ->
+        activeProfile,
+    ) { medications, next, profile ->
         val nextById = next.associate { it.medicationId to it.nextAt }
         MedicationListUiState(
             loading = false,
             items = medications.map { MedicationListItem(it, nextById[it.medication.id]) },
+            profile = profile,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MedicationListUiState())
 
@@ -50,7 +60,8 @@ class MedicationListViewModel(repository: MedicationRepository) : ViewModel() {
 
         val Factory = viewModelFactory {
             initializer {
-                MedicationListViewModel(this[APPLICATION_KEY]!!.appContainer.medicationRepository)
+                val container = this[APPLICATION_KEY]!!.appContainer
+                MedicationListViewModel(container.medicationRepository, container.profileRepository)
             }
         }
     }

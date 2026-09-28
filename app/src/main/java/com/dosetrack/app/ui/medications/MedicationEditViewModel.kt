@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
 import com.dosetrack.app.data.MedicationInput
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.ProfileRepository
 import com.dosetrack.app.data.ScheduleInput
 import com.dosetrack.app.data.db.MedicationWithSchedules
 import com.dosetrack.app.data.db.effectiveReminderStyle
@@ -76,6 +77,7 @@ data class MedicationFormState(
 class MedicationEditViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: MedicationRepository,
+    private val profileRepository: ProfileRepository,
 ) : ViewModel() {
     private val editId: Long? = savedStateHandle.get<Long>(ARG_ID)?.takeIf { it > 0 }
     private var nextKey = 0L
@@ -145,12 +147,14 @@ class MedicationEditViewModel(
         }
         _state.update { it.copy(saving = true) }
         viewModelScope.launch {
-            repository.save(form.toInput())
+            // A new medication belongs to the profile shown when it is saved; edits keep theirs.
+            repository.save(form.toInput(profileRepository.activeProfileNow().id))
             _state.update { it.copy(saving = false, saved = true) }
         }
     }
 
-    private fun MedicationFormState.toInput() = MedicationInput(
+    private fun MedicationFormState.toInput(profileId: Long) = MedicationInput(
+        profileId = profileId,
         id = editId,
         name = name,
         genericName = genericName,
@@ -205,6 +209,7 @@ class MedicationEditViewModel(
                 MedicationEditViewModel(
                     createSavedStateHandle(),
                     this[APPLICATION_KEY]!!.appContainer.medicationRepository,
+                    this[APPLICATION_KEY]!!.appContainer.profileRepository,
                 )
             }
         }
