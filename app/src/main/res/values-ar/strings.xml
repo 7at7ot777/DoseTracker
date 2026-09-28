@@ -217,6 +217,40 @@
     <string name="snackbar_taken">تم تسجيل %1$s كمأخوذة</string>
     <string name="snackbar_skipped">تم تخطي %1$s</string>
 
+    <!-- Notifications -->
+    <string name="channel_reminders_name">تذكيرات الأدوية</string>
+    <string name="channel_reminders_description">تذكير في كل موعد جرعة</string>
+    <string name="notification_title">💊 حان وقت تناول %1$s</string>
+    <string name="notification_action_taken">تم أخذها</string>
+    <string name="notification_action_snooze">غفوة %1$d د</string>
+    <string name="notification_action_open">فتح التطبيق</string>
+
+    <!-- Snooze -->
+    <string name="action_snooze">غفوة</string>
+    <string name="snooze_title">تأجيل تذكير %1$s</string>
+    <string name="snooze_custom">مخصص</string>
+    <string name="snooze_custom_minutes">الدقائق</string>
+    <string name="snooze_custom_range">من 1 إلى %1$d دقيقة</string>
+    <string name="snoozed_until">مؤجل حتى %1$s</string>
+    <plurals name="minutes_count">
+        <item quantity="zero">%1$d دقيقة</item>
+        <item quantity="one">دقيقة واحدة</item>
+        <item quantity="two">دقيقتان</item>
+        <item quantity="few">%1$d دقائق</item>
+        <item quantity="many">%1$d دقيقة</item>
+        <item quantity="other">%1$d دقيقة</item>
+    </plurals>
+
+    <!-- Reminder health banners -->
+    <string name="banner_notifications_off_title">الإشعارات متوقفة</string>
+    <string name="banner_notifications_off_message">لن تصلك تذكيرات الجرعات حتى تسمح بالإشعارات لتطبيق DoseTrack.</string>
+    <string name="banner_exact_title">قد تتأخر التذكيرات</string>
+    <string name="banner_exact_message">اسمح بـ \"المنبهات والتذكيرات\" لتظهر التذكيرات في موعد الجرعة تمامًا.</string>
+    <string name="banner_reminders_disabled_title">التذكيرات متوقفة</string>
+    <string name="banner_reminders_disabled_message">فعّلها من الإعدادات لتصلك إشعارات في مواعيد الجرعات.</string>
+    <string name="action_allow_notifications">السماح بالإشعارات</string>
+    <string name="action_open_settings">فتح الإعدادات</string>
+
     <!-- Reminder notes derived from food instructions -->
     <string name="reminder_food_before">يؤخذ قبل الأكل</string>
     <string name="reminder_food_with">يؤخذ مع الأكل</string>

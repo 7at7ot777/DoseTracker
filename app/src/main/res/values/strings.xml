@@ -181,6 +181,36 @@
     <string name="snackbar_taken">%1$s marked as taken</string>
     <string name="snackbar_skipped">%1$s skipped</string>
 
+    <!-- Notifications -->
+    <string name="channel_reminders_name">Medication reminders</string>
+    <string name="channel_reminders_description">Reminders at each scheduled dose time</string>
+    <string name="notification_title">💊 Time to take %1$s</string>
+    <string name="notification_action_taken">Taken</string>
+    <string name="notification_action_snooze">Snooze %1$d min</string>
+    <string name="notification_action_open">Open App</string>
+
+    <!-- Snooze -->
+    <string name="action_snooze">Snooze</string>
+    <string name="snooze_title">Snooze %1$s</string>
+    <string name="snooze_custom">Custom</string>
+    <string name="snooze_custom_minutes">Minutes</string>
+    <string name="snooze_custom_range">1 to %1$d minutes</string>
+    <string name="snoozed_until">Snoozed until %1$s</string>
+    <plurals name="minutes_count">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+
+    <!-- Reminder health banners -->
+    <string name="banner_notifications_off_title">Notifications are off</string>
+    <string name="banner_notifications_off_message">You won\'t get dose reminders until notifications are allowed for DoseTrack.</string>
+    <string name="banner_exact_title">Reminders may arrive late</string>
+    <string name="banner_exact_message">Allow \"Alarms &amp; reminders\" so reminders appear exactly at dose time.</string>
+    <string name="banner_reminders_disabled_title">Reminders are turned off</string>
+    <string name="banner_reminders_disabled_message">Turn them on in Settings to be notified at dose times.</string>
+    <string name="action_allow_notifications">Allow notifications</string>
+    <string name="action_open_settings">Open settings</string>
+
     <!-- Reminder notes derived from food instructions -->
     <string name="reminder_food_before">Take before food</string>
     <string name="reminder_food_with">Take with food</string>

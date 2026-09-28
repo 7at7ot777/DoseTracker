@@ -4,12 +4,14 @@ import com.dosetrack.app.data.db.AppDatabase
 import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.DoseWithMedication
 import com.dosetrack.app.data.model.DoseStatus
+import com.dosetrack.app.reminders.ReminderManager
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.ZoneId
 
 class DoseRepository(
     private val db: AppDatabase,
+    private val reminders: ReminderManager,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val doseDao = db.doseDao()
@@ -39,11 +41,13 @@ class DoseRepository(
         val dose = doseDao.getById(id) ?: return
         if (dose.status != DoseStatus.PENDING) return
         doseDao.update(dose.copy(snoozedUntil = until, updatedAt = clock()))
+        reminders.onSnoozed(id, until)
     }
 
     /** Restores a dose exactly as it was before a status change (undo). */
     suspend fun restore(previous: DoseEntity) {
         doseDao.update(previous.copy(updatedAt = clock()))
+        afterStatusChange(previous.id, previous.status)
     }
 
     private suspend fun changeStatus(id: Long, status: DoseStatus): DoseEntity? {
@@ -57,6 +61,11 @@ class DoseRepository(
                 updatedAt = now,
             ),
         )
+        afterStatusChange(id, status)
         return dose
+    }
+
+    private suspend fun afterStatusChange(id: Long, status: DoseStatus) {
+        if (status == DoseStatus.PENDING) reminders.rescheduleAll() else reminders.onDoseResolved(id)
     }
 }

@@ -14,6 +14,7 @@ import com.dosetrack.app.data.model.MedicationStatus
 import com.dosetrack.app.data.model.MedicationType
 import com.dosetrack.app.domain.DoseSync
 import com.dosetrack.app.domain.MedicationDuration
+import com.dosetrack.app.reminders.ReminderManager
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -48,6 +49,7 @@ data class ChangeResult(val medicationId: Long, val removedDoseIds: List<Long>)
 class MedicationRepository(
     private val db: AppDatabase,
     private val doseSync: DoseSync,
+    private val reminders: ReminderManager,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val medicationDao = db.medicationDao()
@@ -64,6 +66,7 @@ class MedicationRepository(
 
     suspend fun save(input: MedicationInput): ChangeResult {
         val result = saveInTransaction(input)
+        reminders.onDosesResolved(result.removedDoseIds)
         doseSync.sync()
         return result
     }
@@ -119,11 +122,7 @@ class MedicationRepository(
     }
 
     /** Stops reminders; historical doses are untouched. */
-    suspend fun pause(id: Long): ChangeResult = db.withTransaction {
-        val now = clock()
-        medicationDao.setStatus(id, MedicationStatus.PAUSED, now)
-        ChangeResult(id, deleteFuturePending(id, now))
-    }
+    suspend fun pause(id: Long): ChangeResult = stopReminders(id, MedicationStatus.PAUSED)
 
     /** Doses are generated again from now on (not back-filled for the paused period). */
     suspend fun resume(id: Long): ChangeResult {
@@ -133,10 +132,18 @@ class MedicationRepository(
     }
 
     /** Soft delete: hidden from lists, dose history kept. */
-    suspend fun archive(id: Long): ChangeResult = db.withTransaction {
-        val now = clock()
-        medicationDao.setStatus(id, MedicationStatus.ARCHIVED, now)
-        ChangeResult(id, deleteFuturePending(id, now))
+    suspend fun archive(id: Long): ChangeResult = stopReminders(id, MedicationStatus.ARCHIVED)
+
+    private suspend fun stopReminders(id: Long, status: MedicationStatus): ChangeResult {
+        val result = db.withTransaction {
+            val now = clock()
+            medicationDao.setStatus(id, status, now)
+            ChangeResult(id, deleteFuturePending(id, now))
+        }
+        reminders.onDosesResolved(result.removedDoseIds)
+        // Also cancels alarms of this medication's still-pending past doses.
+        reminders.rescheduleAll()
+        return result
     }
 
     private suspend fun deleteFuturePending(medicationId: Long, from: Long): List<Long> {

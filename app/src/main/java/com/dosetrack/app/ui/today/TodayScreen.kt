@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Snooze
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,6 +36,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,6 +59,8 @@ import com.dosetrack.app.ui.appResources
 import com.dosetrack.app.ui.components.ConfirmDialog
 import com.dosetrack.app.ui.components.DoseStatusBadge
 import com.dosetrack.app.ui.components.EmptyState
+import com.dosetrack.app.ui.components.ReminderHealthBanners
+import com.dosetrack.app.ui.components.SnoozeDialog
 import com.dosetrack.app.ui.currentLocale
 import com.dosetrack.app.ui.is24HourClock
 
@@ -73,6 +77,7 @@ fun TodayScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var confirmTake by remember { mutableStateOf<TodayDose?>(null) }
     var confirmSkip by remember { mutableStateOf<TodayDose?>(null) }
+    var snoozeTarget by remember { mutableStateOf<TodayDose?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -121,6 +126,7 @@ fun TodayScreen(
                 state = state,
                 onTake = { confirmTake = it },
                 onSkip = { confirmSkip = it },
+                onSnooze = { snoozeTarget = it },
                 onMarkNotTaken = viewModel::markNotTaken,
                 onOpenMedication = onOpenMedication,
                 modifier = Modifier.padding(padding),
@@ -138,6 +144,18 @@ fun TodayScreen(
                 confirmTake = null
             },
             onDismiss = { confirmTake = null },
+        )
+    }
+    snoozeTarget?.let { item ->
+        SnoozeDialog(
+            title = stringResource(R.string.snooze_title, item.medication.name),
+            initialMinutes = state.defaultSnoozeMinutes,
+            confirmLabel = stringResource(R.string.action_snooze),
+            onConfirm = { minutes ->
+                viewModel.snooze(item, minutes)
+                snoozeTarget = null
+            },
+            onDismiss = { snoozeTarget = null },
         )
     }
     confirmSkip?.let { item ->
@@ -159,6 +177,7 @@ private fun TodayList(
     state: TodayUiState,
     onTake: (TodayDose) -> Unit,
     onSkip: (TodayDose) -> Unit,
+    onSnooze: (TodayDose) -> Unit,
     onMarkNotTaken: (TodayDose) -> Unit,
     onOpenMedication: (Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -172,6 +191,9 @@ private fun TodayList(
         contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (state.hasMedications) {
+            item(key = "banners") { ReminderHealthBanners(remindersEnabled = state.remindersEnabled) }
+        }
         item(key = "progress") { ProgressCard(state) }
         if (state.doses.isEmpty()) {
             item(key = "none") {
@@ -196,6 +218,7 @@ private fun TodayList(
                     item = item,
                     onTake = { onTake(item) },
                     onSkip = { onSkip(item) },
+                    onSnooze = { onSnooze(item) },
                     onMarkNotTaken = { onMarkNotTaken(item) },
                     onOpen = { onOpenMedication(item.medication.id) },
                 )
@@ -239,6 +262,7 @@ private fun DoseCard(
     item: TodayDose,
     onTake: () -> Unit,
     onSkip: () -> Unit,
+    onSnooze: () -> Unit,
     onMarkNotTaken: () -> Unit,
     onOpen: () -> Unit,
 ) {
@@ -273,6 +297,14 @@ private fun DoseCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    val snoozedUntil = item.dose.snoozedUntil
+                    if (actionable && snoozedUntil != null) {
+                        Text(
+                            text = stringResource(R.string.snoozed_until, Formats.time(snoozedUntil, is24, locale)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     DoseStatusBadge(
@@ -302,6 +334,17 @@ private fun DoseCard(
                             .heightIn(min = 56.dp),
                     ) {
                         Text(stringResource(R.string.action_skip))
+                    }
+                }
+                if (item.state == DoseDisplayState.DUE) {
+                    TextButton(
+                        onClick = onSnooze,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp),
+                    ) {
+                        Icon(Icons.Filled.Snooze, contentDescription = null)
+                        Text(stringResource(R.string.action_snooze), modifier = Modifier.padding(start = 8.dp))
                     }
                 }
             }

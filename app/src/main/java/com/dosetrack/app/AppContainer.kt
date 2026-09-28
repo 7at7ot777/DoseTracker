@@ -6,6 +6,9 @@ import com.dosetrack.app.data.MedicationRepository
 import com.dosetrack.app.data.SettingsRepository
 import com.dosetrack.app.data.db.AppDatabase
 import com.dosetrack.app.domain.DoseSync
+import com.dosetrack.app.reminders.AlarmScheduler
+import com.dosetrack.app.reminders.NotificationHelper
+import com.dosetrack.app.reminders.ReminderManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -19,9 +22,11 @@ class AppContainer(context: Context) {
 
     val database: AppDatabase = AppDatabase.build(appContext)
     val settingsRepository = SettingsRepository(appContext)
-    val doseSync = DoseSync(database)
-    val doseRepository = DoseRepository(database)
-    val medicationRepository = MedicationRepository(database, doseSync)
+    val notificationHelper = NotificationHelper(appContext)
+    val reminderManager = ReminderManager(database, settingsRepository, AlarmScheduler(appContext), notificationHelper)
+    val doseSync = DoseSync(database, reminderManager)
+    val doseRepository = DoseRepository(database, reminderManager)
+    val medicationRepository = MedicationRepository(database, doseSync, reminderManager)
 }
 
 val Context.appContainer: AppContainer

@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dosetrack.app.appContainer
+import com.dosetrack.app.data.AppSettings
 import com.dosetrack.app.data.DoseRepository
 import com.dosetrack.app.data.MedicationRepository
+import com.dosetrack.app.data.SettingsRepository
 import com.dosetrack.app.data.db.DoseEntity
 import com.dosetrack.app.data.db.MedicationEntity
 import com.dosetrack.app.domain.DoseDisplayState
@@ -44,6 +46,8 @@ data class TodayUiState(
     val date: LocalDate = LocalDate.now(),
     val doses: List<TodayDose> = emptyList(),
     val hasMedications: Boolean = false,
+    val remindersEnabled: Boolean = true,
+    val defaultSnoozeMinutes: Int = AppSettings.DEFAULT_SNOOZE_MINUTES,
 ) {
     val total: Int get() = doses.size
     val taken: Int get() = doses.count { it.state == DoseDisplayState.TAKEN }
@@ -60,6 +64,7 @@ sealed interface TodayEvent {
 class TodayViewModel(
     private val doseRepository: DoseRepository,
     medicationRepository: MedicationRepository,
+    settingsRepository: SettingsRepository,
     private val doseSync: DoseSync,
 ) : ViewModel() {
 
@@ -89,7 +94,8 @@ class TodayViewModel(
         ticks,
         dosesOfDay,
         medicationRepository.observeVisible(),
-    ) { tick, dayDoses, medications ->
+        settingsRepository.settings,
+    ) { tick, dayDoses, medications, settings ->
         val now = tick.first
         TodayUiState(
             loading = false,
@@ -102,6 +108,8 @@ class TodayViewModel(
                 )
             },
             hasMedications = medications.isNotEmpty(),
+            remindersEnabled = settings.remindersEnabled,
+            defaultSnoozeMinutes = settings.snoozeMinutes,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())
 
@@ -120,6 +128,12 @@ class TodayViewModel(
         }
     }
 
+    fun snooze(item: TodayDose, minutes: Int) {
+        viewModelScope.launch {
+            doseRepository.snooze(item.dose.id, System.currentTimeMillis() + minutes * 60_000L)
+        }
+    }
+
     fun markNotTaken(item: TodayDose) {
         viewModelScope.launch { doseRepository.markNotTaken(item.dose.id) }
     }
@@ -134,7 +148,12 @@ class TodayViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val container = this[APPLICATION_KEY]!!.appContainer
-                TodayViewModel(container.doseRepository, container.medicationRepository, container.doseSync)
+                TodayViewModel(
+                    container.doseRepository,
+                    container.medicationRepository,
+                    container.settingsRepository,
+                    container.doseSync,
+                )
             }
         }
     }
